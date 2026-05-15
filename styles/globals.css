@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Palanquin+Dark:wght@600&display=swap');
+
+@tailwind base;
+
+@layer base {
+  body {
+    @apply font-pt
+  }
+
+  input,
+  select {
+    @apply outline-0 focus:ring-transparent focus:outline-none ring-transparent shadow-none
+  }
+
+  img,
+  video {
+    @apply max-w-none
+  }
+
+  img,
+  svg,
+  video {
+    @apply max-w-none
+  }
+}
+
+@tailwind components;
+@tailwind utilities;
+
+#__next {
+  @apply w-full h-full;
+}
+
+body{
+  @apply bg-f5f3f4
+}
+
+.container {
+  @apply mx-auto pl-3 pr-3 lg:pl-0 lg:pr-0;
+}
+
+.shadow-text {
+  text-shadow:
+    1px 1px 0 #202124,
+    -1px -1px 0 #202124,
+    1px -1px 0 #202124,
+    -1px 1px 0 #202124,
+    1px 1px 0 #202124;
+}
+.chip-item label[data-checked]:not([data-disabled]){
+  @apply border-58b4d1
+}
+.chip-item label span{
+  @apply text-58b4d1
+}
+.home-left [data-hovered]{
+  @apply !bg-transparent
+}
+.tab-active [role="tab"]:hover{
+  @apply border-58b4d1
+}
+.tab-active [data-active]{
+  @apply border-58b4d1
+}
+
+.show-all button{
+  @apply w-full text-center font-bold text-xs text-58b4d1 block 
+}
+
+.drawer-notification .mantine-Paper-root{
+  @apply lg:max-w-[400px]
+}
+
+.mantine-Modal-title{
+  @apply text-base font-bold text-343a40
+}
+
+.post-title .mantine-Input-input{
+  @apply border-none
+}
+
+.mantine-Spoiler-root .mantine-Text-root{
+  @apply py-2
+}
+.post-item .mantine-Spoiler-control{
+  @apply text-center w-full text-sm text-white font-bold z-10 absolute bottom-0 bg-343a40 bg-opacity-75 !border-b !border-gray-200
+}
