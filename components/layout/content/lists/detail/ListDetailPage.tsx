@@ -68,24 +68,38 @@ export default function ListDetailPage({ slug }: ListDetailPageProps) {
 
   return (
     <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
-      <Tabs value={period} onTabChange={(value) => setPeriod((value as ListPeriod) || "all")}>
+      <Tabs
+        value={period}
+        onTabChange={(value) => setPeriod((value as ListPeriod) || "all")}
+        styles={{
+          tab: {
+            border: "none",
+            borderBottom: "none",
+            fontWeight: 500,
+          },
+          list: {
+            border: "none",
+            gap: 4,
+            backgroundColor: "transparent",
+          },
+        }}
+      >
         <div
-          className="w-full bg-white rounded mb-4 text-sm min-h-[40px] relative grid grid-cols-12 items-center px-2 gap-2"
-          style={{ boxShadow: "rgba(33, 35, 38, 0.1) 0px 10px 10px -10px" }}
+          className="mb-4 grid w-full grid-cols-12 items-center gap-2 rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-card sm:px-4"
         >
-          <Link href={listIndexPath()} className="col-span-1 flex justify-center" aria-label={t("goBack")}>
-            <IconArrowNarrowLeft />
+          <Link href={listIndexPath()} className="col-span-2 flex justify-center sm:col-span-1" aria-label={t("goBack")}>
+            <IconArrowNarrowLeft className="text-gray-700" />
           </Link>
-          <div className="col-span-5 sm:col-span-6 text-center truncate">
-            <span className="font-bold text-sm text-126782">{listName || slug}</span>
-            &nbsp;{t("list")}
+          <div className="col-span-6 truncate text-center sm:col-span-5">
+            <span className="text-sm font-bold text-58b4d1">{listName || slug}</span>
+            <span className="text-sm text-gray-600">&nbsp;{t("list")}</span>
           </div>
-          <div className="col-span-3 flex justify-end gap-1">
+          <div className="col-span-4 flex justify-end gap-1 sm:col-span-3">
             <button
               type="button"
               title={t("listViewGrid")}
               onClick={() => setViewMode("grid")}
-              className={`p-1 rounded ${viewMode === "grid" ? "bg-58b4d1/20 text-58b4d1" : "text-gray-500"}`}
+              className={`rounded-lg p-1.5 transition-colors ${viewMode === "grid" ? "bg-58b4d1/15 text-58b4d1 shadow-sm" : "text-gray-500 hover:bg-gray-100"}`}
             >
               <IconLayoutGrid size={20} stroke={1.2} />
             </button>
@@ -93,16 +107,31 @@ export default function ListDetailPage({ slug }: ListDetailPageProps) {
               type="button"
               title={t("listViewTimeline")}
               onClick={() => setViewMode("timeline")}
-              className={`p-1 rounded ${viewMode === "timeline" ? "bg-58b4d1/20 text-58b4d1" : "text-gray-500"}`}
+              className={`rounded-lg p-1.5 transition-colors ${viewMode === "timeline" ? "bg-58b4d1/15 text-58b4d1 shadow-sm" : "text-gray-500 hover:bg-gray-100"}`}
             >
               <IconList size={20} stroke={1.2} />
             </button>
           </div>
-          <div className="col-span-3">
-            <Tabs.List className="w-full justify-end border-b-0 tab-active flex-nowrap">
-              <Tabs.Tab value="today" className="text-xs px-1">{t("today")}</Tabs.Tab>
-              <Tabs.Tab value="yesterday" className="text-xs px-1">{t("yesterday")}</Tabs.Tab>
-              <Tabs.Tab value="all" className="text-xs px-1">{t("all")}</Tabs.Tab>
+          <div className="col-span-12 mt-2 sm:col-span-3 sm:mt-0">
+            <Tabs.List className="hide-scrollbar flex w-full flex-nowrap justify-stretch gap-1 overflow-x-auto rounded-xl bg-gray-100/75 p-1">
+              <Tabs.Tab
+                value="today"
+                className="min-w-0 flex-1 rounded-lg border-0 px-2 py-1.5 text-center text-[11px] font-medium text-gray-600 data-[active]:bg-white data-[active]:font-semibold data-[active]:text-58b4d1 data-[active]:shadow-sm sm:text-xs"
+              >
+                {t("today")}
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="yesterday"
+                className="min-w-0 flex-1 rounded-lg border-0 px-2 py-1.5 text-center text-[11px] font-medium text-gray-600 data-[active]:bg-white data-[active]:font-semibold data-[active]:text-58b4d1 data-[active]:shadow-sm sm:text-xs"
+              >
+                {t("yesterday")}
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="all"
+                className="min-w-0 flex-1 rounded-lg border-0 px-2 py-1.5 text-center text-[11px] font-medium text-gray-600 data-[active]:bg-white data-[active]:font-semibold data-[active]:text-58b4d1 data-[active]:shadow-sm sm:text-xs"
+              >
+                {t("all")}
+              </Tabs.Tab>
             </Tabs.List>
           </div>
         </div>

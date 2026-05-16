@@ -1,13 +1,15 @@
 import PostList from "@/components/layout/content/contentCenter/post/PostList";
 import { resolveProfileImageUrl } from "@/src/avatarUrl";
 import type { SearchPostItem } from "@/src/searchTypes";
+import { pickPostImageUrl } from "@/src/postImageUrl";
 import { useTranslation } from "react-i18next";
 
 interface SearchPostResultsProps {
   posts: SearchPostItem[];
+  readOnly?: boolean;
 }
 
-export default function SearchPostResults({ posts }: SearchPostResultsProps) {
+export default function SearchPostResults({ posts, readOnly = false }: SearchPostResultsProps) {
   const { t } = useTranslation();
 
   if (posts.length === 0) {
@@ -31,7 +33,10 @@ export default function SearchPostResults({ posts }: SearchPostResultsProps) {
             postLink={author ? `/${author}/posts/${post.id}` : "#"}
             profileImage={resolveProfileImageUrl(post.profileImage)}
             time={post.createDate || ""}
-            image={post.image || "/postExample/F5Z00CEaEAAFPgi.jpg"}
+            image={
+              pickPostImageUrl(post.image, post.imageUrls, "feed") ||
+              "/postExample/F5Z00CEaEAAFPgi.jpg"
+            }
             commentCount={post.commentCount ?? 0}
             pikCount={post.favoriteCount ?? 0}
             isFavorited={post.isFavorited}
@@ -41,6 +46,7 @@ export default function SearchPostResults({ posts }: SearchPostResultsProps) {
             authorIsFollowing={post.authorIsFollowing === true}
             profile={false}
             collectionItem={false}
+            readOnly={readOnly}
           />
         );
       })}

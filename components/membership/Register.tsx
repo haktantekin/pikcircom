@@ -136,7 +136,7 @@ export default function RegisterMember() {
 
     register({ params: payload }).then((res) => {
       if (res.status === 200 || res.status === 201)
-        router.push('/home')
+        router.push('/')
     }).catch((error) => {
       const errorMessage = axios.isAxiosError(error)
         ? error.response?.data?.message ?? 'Kullanıcı kaydı başarısız.'
@@ -270,7 +270,7 @@ export default function RegisterMember() {
           type="submit">
           {t("register")}
         </button>
-        <Link href="/" className=' text-58b4d1 text-sm text-center mt-1 border border-58b4d1 rounded p-2 px-0 flex mx-auto w-full items-center justify-center'>
+        <Link href="/login" className=' text-58b4d1 text-sm text-center mt-1 border border-58b4d1 rounded p-2 px-0 flex mx-auto w-full items-center justify-center'>
           {t("logIn")}
         </Link>
       </Box>

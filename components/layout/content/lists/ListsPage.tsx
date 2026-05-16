@@ -81,42 +81,75 @@ export default function ListsPage() {
   };
 
   return (
-    <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
-      <Tabs value={period} onTabChange={(value) => setPeriod((value as ListPeriod) || "all")}>
-        <div
-          className="w-full bg-white rounded mt-4 lg:mt-0 min-h-[40px] flex justify-between items-center px-4"
-          style={{ boxShadow: "rgba(33, 35, 38, 0.1) 0px 10px 10px -10px" }}
-        >
-          <h1 className="text-sm lg:text-base text-left">
-            <span className="font-bold text-58b4d1">{t("pikList")}</span>
+    <div className="relative col-span-12 mb-4 mt-4 lg:col-span-7 lg:mt-0">
+      <Tabs
+        value={period}
+        onTabChange={(value) => setPeriod((value as ListPeriod) || "all")}
+        styles={{
+          tab: {
+            border: "none",
+            borderBottom: "none",
+            fontWeight: 500,
+          },
+          list: {
+            border: "none",
+            gap: 4,
+            backgroundColor: "transparent",
+          },
+        }}
+      >
+        <div className="mb-4 flex min-h-[52px] w-full flex-col gap-3 rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-card sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <h1 className="shrink-0 text-sm font-bold text-58b4d1 lg:text-base">
+            {t("pikList")}
           </h1>
-          <Tabs.List className="w-full justify-around border-b-0 tab-active">
-            <Tabs.Tab value="today">{t("today")}</Tabs.Tab>
-            <Tabs.Tab value="yesterday">{t("yesterday")}</Tabs.Tab>
-            <Tabs.Tab value="all">{t("all")}</Tabs.Tab>
+          <Tabs.List className="hide-scrollbar flex w-full flex-nowrap justify-stretch gap-1 overflow-x-auto rounded-xl bg-gray-100/75 p-1 sm:w-auto sm:justify-end">
+            <Tabs.Tab
+              value="today"
+              className="min-w-[4.5rem] flex-1 rounded-lg border-0 px-3 py-2 text-center text-xs text-gray-600 transition-colors hover:bg-white/60 hover:text-202124 data-[active]:bg-white data-[active]:font-semibold data-[active]:text-58b4d1 data-[active]:shadow-sm sm:min-w-0 sm:flex-none sm:text-sm"
+            >
+              {t("today")}
+            </Tabs.Tab>
+            <Tabs.Tab
+              value="yesterday"
+              className="min-w-[4.5rem] flex-1 rounded-lg border-0 px-3 py-2 text-center text-xs text-gray-600 transition-colors hover:bg-white/60 hover:text-202124 data-[active]:bg-white data-[active]:font-semibold data-[active]:text-58b4d1 data-[active]:shadow-sm sm:min-w-0 sm:flex-none sm:text-sm"
+            >
+              {t("yesterday")}
+            </Tabs.Tab>
+            <Tabs.Tab
+              value="all"
+              className="min-w-[4.5rem] flex-1 rounded-lg border-0 px-3 py-2 text-center text-xs text-gray-600 transition-colors hover:bg-white/60 hover:text-202124 data-[active]:bg-white data-[active]:font-semibold data-[active]:text-58b4d1 data-[active]:shadow-sm sm:min-w-0 sm:flex-none sm:text-sm"
+            >
+              {t("all")}
+            </Tabs.Tab>
           </Tabs.List>
         </div>
 
         {(["today", "yesterday", "all"] as ListPeriod[]).map((tab) => (
           <Tabs.Panel key={tab} value={tab} pt="xs">
-            <button
-              type="button"
-              className="font-bold text-58b4d1 text-base py-4 w-full text-center"
-              onClick={() => setNewListModal(true)}
-            >
-              {t("createNewList")}
-            </button>
+            <div className="mb-4 flex flex-col items-stretch gap-3">
+              <button
+                type="button"
+                className="w-full rounded-xl border border-58b4d1/40 bg-white px-4 py-3 text-center text-sm font-bold text-58b4d1 shadow-sm transition-all hover:border-58b4d1 hover:bg-58b4d1/5 hover:shadow-card"
+                onClick={() => setNewListModal(true)}
+              >
+                {t("createNewList")}
+              </button>
+            </div>
             {createMessage && tab === period && (
-              <p className="text-sm text-center text-gray-600 mb-2">{createMessage}</p>
+              <p className="mb-3 rounded-xl border border-gray-100 bg-white px-4 py-3 text-center text-sm text-gray-600 shadow-sm">
+                {createMessage}
+              </p>
             )}
             {isLoading ? (
-              <div className="mt-4">
+              <div className="mt-2">
                 <Skeleton />
               </div>
             ) : lists.length === 0 ? (
-              <p className="text-sm text-center text-gray-500 py-8">{t("listEmpty")}</p>
+              <p className="rounded-xl border border-gray-100 bg-white px-6 py-10 text-center text-sm text-gray-500 shadow-card">
+                {t("listEmpty")}
+              </p>
             ) : (
-              <section className="w-full flex flex-col gap-5">
+              <section className="flex w-full flex-col gap-4">
                 {lists.map((list) => (
                   <ListItem
                     key={list.id}
@@ -139,9 +172,10 @@ export default function ListsPage() {
           setListName("");
         }}
         centered
+        radius="md"
         title={t("createList")}
       >
-        <div className="mt-2">
+        <div className="mt-1">
           <TextInput
             icon={<IconAbc size={15} />}
             type="text"
@@ -150,12 +184,16 @@ export default function ListsPage() {
             onChange={(e) => setListName(e.currentTarget.value)}
           />
         </div>
-        <div className="mt-4 flex justify-center">
+        <div className="mt-6 flex justify-center">
           <button
             type="button"
             onClick={handleCreate}
             disabled={!listName.trim() || isCreating}
-            className={`w-full max-w-[120px] min-h-[36px] rounded font-bold text-white text-sm ${!listName.trim() || isCreating ? "bg-gray-300 pointer-events-none" : "bg-58b4d1"}`}
+            className={`min-h-[40px] w-full max-w-[200px] rounded-lg text-sm font-bold text-white shadow-sm transition-opacity ${
+              !listName.trim() || isCreating
+                ? "cursor-not-allowed bg-gray-300"
+                : "bg-58b4d1 hover:bg-58b4d1/90"
+            }`}
           >
             {isCreating ? <Loader size="sm" color="white" /> : t("create")}
           </button>

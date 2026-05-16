@@ -14,14 +14,15 @@ interface RecentRegisteredUsersModel {
 }
 interface FollowBoxProps {
   recentRegisteredUsers: RecentRegisteredUsersModel[];
+  readOnly?: boolean;
 }
 
-export default function FollowBox({ recentRegisteredUsers }: FollowBoxProps) {
+export default function FollowBox({ recentRegisteredUsers, readOnly = false }: FollowBoxProps) {
   const { t } = useTranslation();
   return (
     <>
-      <div className="bg-white rounded w-full h-auto block col-span-2 p-3 border border-gray-200">
-        <h2 className="fony-bold text-sm">{t("newUsers")}</h2>
+      <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-card">
+        <h2 className="mb-1 text-sm font-bold text-202124">{t("newUsers")}</h2>
         {recentRegisteredUsers &&
           recentRegisteredUsers
             .filter((x) => x.userName !== null)
@@ -38,7 +39,7 @@ export default function FollowBox({ recentRegisteredUsers }: FollowBoxProps) {
                         src={pickAvatarUrlFromMap(user?.avatarUrls)}
                         width={400}
                         height={400}
-                        className="w-9 h-9 rounded-full border border-white object-cover"
+                        className="h-9 w-9 rounded-full border border-gray-100 object-cover shadow-sm ring-2 ring-white"
                       />
                     </Link>
                   </div>
@@ -57,12 +58,14 @@ export default function FollowBox({ recentRegisteredUsers }: FollowBoxProps) {
                     </Link>
                   </div>
                   <div className="ml-auto">
+                    {readOnly ? null : (
                     <FollowToggle
                       key={`${user.userName}-${user.isFollowing ? "following" : "not"}`}
                       userName={user.userName}
                       initialIsFollowing={user.isFollowing === true}
                       variant="sidebar"
                     />
+                    )}
                   </div>
                 </div>
               );

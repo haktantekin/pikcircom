@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
 import { resolveProfileImageUrl } from "@/src/avatarUrl";
+import { pickPostImageUrl } from "@/src/postImageUrl";
 import {
   profileCollectionsPath,
   profileLikedPath,
@@ -29,6 +30,7 @@ interface EntryProps {
   userName?: string;
   createDate?: string;
   image?: string;
+  imageUrls?: Record<string, string>;
   profileImage?: string;
   tags?: { slug: string; name: string }[];
 }
@@ -44,6 +46,7 @@ interface CollectionPostProps {
   userName?: string;
   createDate?: string;
   image?: string;
+  imageUrls?: Record<string, string>;
   profileImage?: string;
   tags?: { slug: string; name: string }[];
 }
@@ -67,9 +70,10 @@ interface ProfileContentProps {
     collections?: CollectionProps[];
   };
   activeTab?: ProfileTab;
+  readOnly?: boolean;
 }
 
-export default function ProfileContent({ user, activeTab = "piklerim" }: ProfileContentProps) {
+export default function ProfileContent({ user, activeTab = "piklerim", readOnly = false }: ProfileContentProps) {
   const [collectionsOverride, setCollectionsOverride] = useState<CollectionProps[] | null>(null);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [createCollectionOpened, setCreateCollectionOpened] = useState(false);
@@ -93,9 +97,10 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
   );
 
   const profileUserName = user?.userName?.trim() ?? "";
-  const postsHref = profileUserName ? profilePath(profileUserName) : "/home";
-  const likedHref = profileUserName ? profileLikedPath(profileUserName) : "/home";
-  const collectionsHref = profileUserName ? profileCollectionsPath(profileUserName) : "/home";
+  const postsHref = profileUserName ? profilePath(profileUserName) : "/";
+  const likedHref = profileUserName ? profileLikedPath(profileUserName) : "/";
+  const collectionsHref = profileUserName ? profileCollectionsPath(profileUserName) : "/";
+  const canManageCollections = Boolean(user?.isOwnProfile && !readOnly);
 
   const collectClick = (collection: CollectionProps): void => {
     setSelectedCollectionId(collection.id);
@@ -207,7 +212,10 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
                   postLink={`/${x.userName || user?.userName || ''}/posts/${x.id}`}
                   profileImage={resolveProfileImageUrl(x.profileImage)}
                   time={x.createDate || ''}
-                  image={x.image || `/postExample/Dp-lP3mWkAAinKk.jpg`}
+                  image={
+                    pickPostImageUrl(x.image, x.imageUrls, "feed") ||
+                    `/postExample/Dp-lP3mWkAAinKk.jpg`
+                  }
                   commentCount={x.commentCount ?? 0}
                   pikCount={x.favoriteCount ?? 0}
                   isFavorited={x.isFavorited}
@@ -218,6 +226,7 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
                   collectionItem={false}
                   collections={userCollections}
                   onCollectionsChange={setCollectionsOverride}
+                  readOnly={readOnly}
                 />
               </React.Fragment>
             );
@@ -235,7 +244,10 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
                   postLink={authorSlug ? `/${authorSlug}/posts/${x.id}` : "#"}
                   profileImage={resolveProfileImageUrl(x.profileImage)}
                   time={x.createDate || ''}
-                  image={x.image || `/postExample/Dp-lP3mWkAAinKk.jpg`}
+                  image={
+                    pickPostImageUrl(x.image, x.imageUrls, "feed") ||
+                    `/postExample/Dp-lP3mWkAAinKk.jpg`
+                  }
                   commentCount={x.commentCount ?? 0}
                   pikCount={x.favoriteCount ?? 0}
                   isFavorited={x.isFavorited ?? true}
@@ -246,6 +258,7 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
                   collectionItem={false}
                   collections={userCollections}
                   onCollectionsChange={setCollectionsOverride}
+                  readOnly={readOnly}
                 />
               </React.Fragment>
             );
@@ -255,7 +268,7 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
           <Tabs.Panel value="collection" pt="lg">
           {!selectedCollection ? (
             <>
-              {user?.isOwnProfile && (
+              {canManageCollections && (
                 <div className="mb-4 flex justify-end">
                   <button onClick={() => setCreateCollectionOpened(true)} className="flex items-center gap-2 rounded bg-58b4d1 px-4 py-2 text-sm font-bold text-white">
                     <IconPlus size={16} />
@@ -263,7 +276,7 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
                   </button>
                 </div>
               )}
-              {userCollections.length === 0 && (
+              {userCollections.length === 0 && canManageCollections && (
                 <button
                   onClick={() => setCreateCollectionOpened(true)}
                   className="bg-white rounded border border-gray-200 p-5 text-sm text-58b4d1 font-bold w-full text-left"
@@ -274,7 +287,7 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
               {userCollections.map((collection) => (
                 <CollectionListItem
                   key={collection.id}
-                  canManage={Boolean(user?.isOwnProfile)}
+                  canManage={canManageCollections}
                   name={collection.name}
                   link={collection.link || `/${user?.userName}/collections/${encodeURIComponent(collection.name.toLowerCase().replace(/\s+/g, '-'))}`}
                   item={collection.item ?? []}
@@ -314,7 +327,10 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
                     postLink={`/${post.userName || user?.userName || ''}/posts/${post.id}`}
                     profileImage={resolveProfileImageUrl(post.profileImage)}
                     time={post.createDate || ''}
-                    image={post.image || `/postExample/F5Z00CEaEAAFPgi.jpg`}
+                    image={
+                      pickPostImageUrl(post.image, post.imageUrls, "feed") ||
+                      `/postExample/F5Z00CEaEAAFPgi.jpg`
+                    }
                     commentCount={post.commentCount ?? 0}
                     pikCount={post.favoriteCount ?? 0}
                     isFavorited={post.isFavorited}
@@ -324,6 +340,7 @@ export default function ProfileContent({ user, activeTab = "piklerim" }: Profile
                     collectionItem={true}
                     collections={userCollections}
                     onCollectionsChange={setCollectionsOverride}
+                    readOnly={readOnly}
                   />
                 ))}
               </div>

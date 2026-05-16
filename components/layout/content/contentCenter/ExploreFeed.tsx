@@ -3,6 +3,7 @@ import PostList from "./post/PostList";
 import Skeleton from "@/components/Skeleton";
 import { getExplorePosts } from "@/configs/client-services";
 import { resolveProfileImageUrl } from "@/src/avatarUrl";
+import { pickPostImageUrl } from "@/src/postImageUrl";
 import { useTranslation } from "react-i18next";
 
 export interface ExplorePost {
@@ -15,15 +16,17 @@ export interface ExplorePost {
   isFavorited?: boolean;
   authorIsFollowing?: boolean;
   image?: string;
+  imageUrls?: Record<string, string>;
   profileImage?: string;
   tags?: { slug: string; name: string; imageUrl?: string }[];
 }
 
 interface ExploreFeedProps {
   selectedTag?: string;
+  readOnly?: boolean;
 }
 
-export default function ExploreFeed({ selectedTag = "" }: ExploreFeedProps) {
+export default function ExploreFeed({ selectedTag = "", readOnly = false }: ExploreFeedProps) {
   const { t } = useTranslation();
   const [posts, setPosts] = useState<ExplorePost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,7 +76,7 @@ export default function ExploreFeed({ selectedTag = "" }: ExploreFeedProps) {
 
   if (error) {
     return (
-      <section className="w-full bg-white rounded mb-4 p-4 text-sm text-center text-red-600">
+      <section className="mb-4 w-full rounded-xl border border-gray-100 bg-white p-6 text-center text-sm text-red-600 shadow-card">
         {error}
       </section>
     );
@@ -81,7 +84,7 @@ export default function ExploreFeed({ selectedTag = "" }: ExploreFeedProps) {
 
   if (posts.length === 0) {
     return (
-      <section className="w-full bg-white rounded mb-4 p-4 text-sm text-center text-gray-500">
+      <section className="mb-4 w-full rounded-xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-500 shadow-card">
         {selectedTag ? t("exploreTagEmpty") : t("exploreEmpty")}
       </section>
     );
@@ -100,7 +103,10 @@ export default function ExploreFeed({ selectedTag = "" }: ExploreFeedProps) {
             postLink={author ? `/${author}/posts/${post.id}` : "#"}
             profileImage={resolveProfileImageUrl(post.profileImage)}
             time={post.createDate || ""}
-            image={post.image || "/postExample/F5Z00CEaEAAFPgi.jpg"}
+            image={
+              pickPostImageUrl(post.image, post.imageUrls, "feed") ||
+              "/postExample/F5Z00CEaEAAFPgi.jpg"
+            }
             commentCount={post.commentCount ?? 0}
             pikCount={post.favoriteCount ?? 0}
             isFavorited={post.isFavorited}
@@ -110,6 +116,7 @@ export default function ExploreFeed({ selectedTag = "" }: ExploreFeedProps) {
             authorIsFollowing={post.authorIsFollowing === true}
             profile={false}
             collectionItem={false}
+            readOnly={readOnly}
           />
         );
       })}

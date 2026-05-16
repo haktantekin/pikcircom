@@ -11,20 +11,38 @@ interface ListItemProps {
 
 export default function ListItem({ slug, name, postCount, previewImages }: ListItemProps) {
   const href = listPath(slug);
-  const images = previewImages.length > 0 ? previewImages : ["/postExample/F5Z00CEaEAAFPgi.jpg"];
+  const images = previewImages.filter(
+    (src) => typeof src === "string" && src.trim() !== "",
+  );
+  const showPreview = images.length > 0;
 
   return (
-    <Link href={href} className="bg-white min-h-[50px] rounded border border-126782 border-dashed flex flex-col text-base mx-auto">
-      <div className="pt-4 pl-4 text-58b4d1">
-        <strong>{name}</strong> &nbsp;({postCount})
+    <Link
+      href={href}
+      className="group mx-auto flex min-h-[50px] w-full max-w-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-card transition-all duration-200 hover:border-58b4d1/30 hover:shadow-card-hover"
+    >
+      <div
+        className={`bg-gradient-to-r from-gray-50/80 to-white px-4 py-3 ${showPreview ? "border-b border-gray-100" : ""}`}
+      >
+        <span className="text-base font-semibold text-58b4d1">
+          {name}
+        </span>
+        <span className="ml-1.5 text-sm font-normal tabular-nums text-gray-500">
+          ({postCount})
+        </span>
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4">
-        {images.slice(0, 4).map((src, index) => (
-          <div className="w-full rounded overflow-hidden aspect-square relative" key={`${slug}-${index}`}>
-            <Image src={src} alt="" fill className="object-cover" unoptimized />
-          </div>
-        ))}
-      </div>
+      {showPreview ? (
+        <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-4 lg:gap-3">
+          {images.slice(0, 4).map((src, index) => (
+            <div
+              className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-100 transition-transform duration-200 group-hover:ring-58b4d1/20"
+              key={`${slug}-${index}`}
+            >
+              <Image src={src} alt="" fill className="object-cover" unoptimized />
+            </div>
+          ))}
+        </div>
+      ) : null}
     </Link>
   );
 }

@@ -27,7 +27,11 @@ const EMPTY_RESULTS: SearchResponse = {
   tags: [],
 };
 
-export default function SearchPage() {
+interface SearchPageProps {
+  feedReadOnly?: boolean;
+}
+
+export default function SearchPage({ feedReadOnly = false }: SearchPageProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<SearchTab>("posts");
@@ -147,20 +151,20 @@ export default function SearchPage() {
       </div>
 
       <Tabs value={activeTab} onTabChange={handleTabChange} className="tab-active">
-        <Tabs.List className="mb-4 w-full flex-nowrap justify-start gap-1 overflow-x-auto border border-gray-200 bg-white py-2">
-          <Tabs.Tab value="posts" className="whitespace-nowrap px-2 text-sm">
+        <Tabs.List className="mb-4 flex w-full flex-nowrap justify-start gap-1 overflow-x-auto rounded-xl border border-gray-100 bg-white px-2 py-2 shadow-card">
+          <Tabs.Tab value="posts" className="whitespace-nowrap rounded-lg px-3 text-sm data-[active]:bg-58b4d1/10">
             {t("searchTabPosts")}
           </Tabs.Tab>
-          <Tabs.Tab value="hashtags" className="whitespace-nowrap px-2 text-sm">
+          <Tabs.Tab value="hashtags" className="whitespace-nowrap rounded-lg px-3 text-sm data-[active]:bg-58b4d1/10">
             {t("searchTabHashtags")}
           </Tabs.Tab>
-          <Tabs.Tab value="users" className="whitespace-nowrap px-2 text-sm">
+          <Tabs.Tab value="users" className="whitespace-nowrap rounded-lg px-3 text-sm data-[active]:bg-58b4d1/10">
             {t("searchTabUsers")}
           </Tabs.Tab>
-          <Tabs.Tab value="lists" className="whitespace-nowrap px-2 text-sm">
+          <Tabs.Tab value="lists" className="whitespace-nowrap rounded-lg px-3 text-sm data-[active]:bg-58b4d1/10">
             {t("searchTabLists")}
           </Tabs.Tab>
-          <Tabs.Tab value="tags" className="whitespace-nowrap px-2 text-sm">
+          <Tabs.Tab value="tags" className="whitespace-nowrap rounded-lg px-3 text-sm data-[active]:bg-58b4d1/10">
             {t("searchTabTags")}
           </Tabs.Tab>
         </Tabs.List>
@@ -175,13 +179,13 @@ export default function SearchPage() {
         )}
 
         {showHint ? (
-          <p className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-500">
+          <p className="rounded-xl border border-gray-100 bg-white p-4 text-sm text-gray-500 shadow-sm">
             {t("searchMinLength")}
           </p>
         ) : null}
 
         {error ? (
-          <p className="mb-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+          <p className="mb-3 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-600 shadow-sm">
             {error}
           </p>
         ) : null}
@@ -191,12 +195,13 @@ export default function SearchPage() {
         ) : !showHint && trimmedQuery.length >= 2 ? (
           <>
             {activeTab === "posts" ? (
-              <SearchPostResults posts={results.posts} />
+              <SearchPostResults posts={results.posts} readOnly={feedReadOnly} />
             ) : null}
             {activeTab === "hashtags" ? (
               <SearchHashtagResults
                 hashtags={results.hashtags}
                 posts={results.hashtagPosts}
+                readOnly={feedReadOnly}
               />
             ) : null}
             {activeTab === "users" ? <SearchUserResults users={results.users} /> : null}

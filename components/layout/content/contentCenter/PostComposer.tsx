@@ -10,8 +10,10 @@ import {
   createPost,
 } from "@/configs/client-services";
 import { dispatchPostCreated } from "@/src/postCreatedEvent";
+import { buildCreatedExplorePost } from "@/src/buildCreatedExplorePost";
 import { pickAvatarUrlFromMap } from "@/src/avatarUrl";
 import { fileToImageDataUrl } from "@/src/imageDataUrl";
+import { fetchAuthProfile } from "@/src/fetchAuthProfile";
 
 export interface CreatedPostPayload {
   id: string;
@@ -60,11 +62,10 @@ export default function PostComposer({
 
     let cancelled = false;
 
-    fetch("/api/auth/profile", { credentials: "include", cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!cancelled && data?.avatarUrls) {
-          setAvatarUrl(pickAvatarUrlFromMap(data.avatarUrls));
+    fetchAuthProfile()
+      .then((result) => {
+        if (!cancelled && result.ok && result.data?.avatarUrls) {
+          setAvatarUrl(pickAvatarUrlFromMap(result.data.avatarUrls));
         }
       })
       .catch(() => undefined);
@@ -106,10 +107,7 @@ export default function PostComposer({
     try {
       setIsSubmitting(true);
 
-      const profileRes = await fetch("/api/auth/profile", {
-        credentials: "include",
-        cache: "no-store",
-      });
+      const profileRes = await fetchAuthProfile();
       if (!profileRes.ok) {
         alert(t("followedFeedLoginHint"));
         return;
@@ -155,9 +153,17 @@ export default function PostComposer({
         alert(t("postAssociationPartialError"));
       }
 
-      clearFile();
       const payload = { id: String(postId) };
-      dispatchPostCreated({ postId: payload.id });
+      const explorePost = buildCreatedExplorePost({
+        postId: payload.id,
+        apiPost: response.data?.post,
+        profile: profileRes.data!,
+        description,
+        tagNames: tags,
+        previewImageUrl: previewUrl,
+      });
+      dispatchPostCreated({ postId: payload.id, post: explorePost });
+      clearFile();
       onCreated?.(payload);
     } catch (error: unknown) {
       const message =
@@ -195,7 +201,7 @@ export default function PostComposer({
   if (isInline) {
     return (
       <section
-        className={`mb-4 overflow-hidden rounded-xl border border-gray-200 bg-white ${showOnMobile ? "block" : "hidden lg:block"}`}
+        className={`mb-4 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-card ${showOnMobile ? "block" : "hidden lg:block"}`}
         style={{ boxShadow: "rgba(33, 35, 38, 0.06) 0px 4px 12px -4px" }}
       >
         <div className="flex gap-3 p-3 sm:p-4">

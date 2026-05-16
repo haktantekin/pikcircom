@@ -36,8 +36,11 @@ interface SuggestionsState {
   mostProductiveUsers: MostProductiveUsersModel[];
   recentRegisteredUsers: RecentRegisteredUsersModel[];
 }
+interface ContentRightProps {
+  readOnly?: boolean;
+}
 
-export default function ContentRight() {
+export default function ContentRight({ readOnly = false }: ContentRightProps) {
   const [suggestions, setSuggestions] = useState<SuggestionsState>({
     mostPopularUsers: [],
     mostProductiveUsers: [],
@@ -76,8 +79,9 @@ export default function ContentRight() {
     <>
       <div className="hidden lg:block col-span-3 relative">
         <div className="absolute w-full">
-          {suggestions.recentRegisteredUsers.length > 0 &&
-            <FollowBox recentRegisteredUsers={suggestions.recentRegisteredUsers} />}
+          {suggestions.recentRegisteredUsers.length > 0 && (
+            <FollowBox recentRegisteredUsers={suggestions.recentRegisteredUsers} readOnly={readOnly} />
+          )}
           <InfoBox mostPopularUsers={suggestions.mostPopularUsers} mostProductiveUsers={suggestions.mostProductiveUsers} />
         </div>
       </div>

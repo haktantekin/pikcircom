@@ -32,10 +32,9 @@ export default function InfoBox({
   const { t } = useTranslation();
   return (
     <>
-      <div
-        className="bg-white rounded w-full h-auto block col-span-2 p-3 mt-3 border border-gray-200">
+      <div className="mt-3 block h-auto w-full rounded-xl border border-gray-100 bg-white p-4 shadow-card">
         <Tabs defaultValue="pik" className="tab-active">
-          <Tabs.List className="w-full justify-around border-b-0">
+          <Tabs.List className="mb-2 w-full justify-around gap-2 border-b border-gray-100 pb-2">
             <Tabs.Tab className="px-0" value="pik">
               {t("mostPiks")}
             </Tabs.Tab>
@@ -67,7 +66,7 @@ export default function InfoBox({
                               src={pickAvatarUrlFromMap(user?.avatarUrls)}
                               width={400}
                               height={400}
-                              className="w-9 h-9 rounded-full border border-white object-cover"
+                              className="h-9 w-9 rounded-full border border-gray-100 object-cover shadow-sm ring-2 ring-white"
                             />
                           </Link>
                         </div>
@@ -119,7 +118,7 @@ export default function InfoBox({
                               src={pickAvatarUrlFromMap(user?.avatarUrls)}
                               width={400}
                               height={400}
-                              className="w-9 h-9 rounded-full border border-white object-cover"
+                              className="h-9 w-9 rounded-full border border-gray-100 object-cover shadow-sm ring-2 ring-white"
                             />
                           </Link>
                         </div>

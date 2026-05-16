@@ -8,6 +8,7 @@ import { profilePath, type ProfileTab } from "@/src/profilePaths";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
+import { useGuestFeedReadOnly } from "@/src/useGuestFeedReadOnly";
 
 export interface ProfilePageUser {
   id: string;
@@ -84,6 +85,7 @@ interface ProfilePageShellProps {
 
 export default function ProfilePageShell({ activeTab }: ProfilePageShellProps) {
   const router = useRouter();
+  const { feedReadOnly } = useGuestFeedReadOnly();
   const [user, setUser] = useState<ProfilePageUser>();
   const [noUser, setNoUser] = useState(0);
   const [loadedProfile, setLoadedProfile] = useState<string | null>(null);
@@ -184,8 +186,9 @@ export default function ProfilePageShell({ activeTab }: ProfilePageShellProps) {
               userCheck={noUser}
               activeTab={activeTab}
               onProfileUpdated={refreshProfile}
+              readOnly={feedReadOnly}
             />
-            <ContentRight />
+            <ContentRight readOnly={feedReadOnly} />
           </div>
         </div>
       </main>

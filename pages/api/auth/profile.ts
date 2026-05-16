@@ -4,6 +4,7 @@ import {
   fetchFlatAuthProfileFromWordPress,
   getWordPressSiteRoot,
 } from "@/src/server/wp-auth-me-profile";
+import { setApiCacheHeaders } from "@/src/apiResponseCache";
 
 export default async function handler(
   req: NextApiRequest,
@@ -38,7 +39,7 @@ export default async function handler(
     return res.status(result.status).json({ message: result.message });
   }
 
-  res.setHeader("Cache-Control", "private, no-store, max-age=0");
+  setApiCacheHeaders(res, "auth");
 
   return res.status(200).json(result.data);
 }

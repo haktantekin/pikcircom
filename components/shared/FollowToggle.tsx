@@ -5,6 +5,7 @@ import {
 } from "@/src/followChangedEvent";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { fetchAuthProfile } from "@/src/fetchAuthProfile";
 
 type FollowToggleVariant = "inline" | "sidebar";
 
@@ -46,14 +47,14 @@ export default function FollowToggle({
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/auth/profile", { credentials: "include", cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
+    fetchAuthProfile()
+      .then((result) => {
         if (cancelled) {
           return;
         }
+        const data = result.data;
         const name =
-          typeof data?.userName === "string"
+          result.ok && typeof data?.userName === "string"
             ? data.userName
             : typeof data?.user?.userName === "string"
               ? data.user.userName

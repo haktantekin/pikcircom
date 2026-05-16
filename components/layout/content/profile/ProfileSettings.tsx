@@ -77,7 +77,7 @@ export default function ProfileSettings({
         <Menu.Target>
           <button
             type="button"
-            className="text-202124 rounded text-sm font-bold justify-center items-center"
+            className="flex items-center justify-center rounded-lg p-1.5 text-sm font-bold text-202124 transition-colors hover:bg-gray-100"
             title={t("sendMessage")}
           >
             <IconDotsVertical size={20} />
@@ -102,6 +102,7 @@ export default function ProfileSettings({
         opened={profileSettingsModal}
         onClose={() => setprofileSettingsModal(false)}
         centered
+        radius="md"
         title={t("profileOptions")}
       >
         <ProfileSettingsModal

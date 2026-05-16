@@ -25,9 +25,9 @@ export default function ShowProfileMobile({ user }: ShowProfileMobileProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
   const userName = user?.userName?.trim() ?? "";
-  const profileHref = userName ? profilePath(userName) : "/home";
-  const likedHref = userName ? profileLikedPath(userName) : "/home";
-  const collectionsHref = userName ? profileCollectionsPath(userName) : "/home";
+  const profileHref = userName ? profilePath(userName) : "/login";
+  const likedHref = userName ? profileLikedPath(userName) : "/login";
+  const collectionsHref = userName ? profileCollectionsPath(userName) : "/login";
 
   const handleLogout = async () => {
     try {
@@ -48,7 +48,7 @@ export default function ShowProfileMobile({ user }: ShowProfileMobileProps) {
   return (
     <>
       <Menu>
-        <Menu.Item href={"/home"} component="a" icon={<IconHome2 size={25} stroke={1.0} />} className="text-sm pb-0">
+        <Menu.Item href={"/"} component="a" icon={<IconHome2 size={25} stroke={1.0} />} className="text-sm pb-0">
           {t("home")}
         </Menu.Item>
         <Menu.Item href={profileHref} component="a" icon={<IconUserCircle size={25} stroke={1.0} />} className="text-sm pb-0">
@@ -69,13 +69,13 @@ export default function ShowProfileMobile({ user }: ShowProfileMobileProps) {
           {t("signOut")}
         </Menu.Item>
         <Menu.Divider />
-        <Menu.Item href={"/home"} component="a" className="text-sm">
+        <Menu.Item href={"/"} component="a" className="text-sm">
           {t("termofServices")}
         </Menu.Item>
-        <Menu.Item href={"/home"} component="a" className="text-sm">
+        <Menu.Item href={"/"} component="a" className="text-sm">
           {t("confidentialityAgreement")}
         </Menu.Item>
-        <Menu.Item href={"/home"} component="a" className="text-sm">
+        <Menu.Item href={"/"} component="a" className="text-sm">
           {t("cookiePolicy")}
         </Menu.Item>
       </Menu>

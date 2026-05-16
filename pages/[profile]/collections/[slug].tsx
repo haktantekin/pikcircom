@@ -2,9 +2,8 @@ import ContentLeft from "@/components/layout/content/ContentLeft";
 import ContentRight from "@/components/layout/content/ContentRight";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
-import { resolveProfileImageUrl } from "@/src/avatarUrl";
 import { profileCollectionsPath } from "@/src/profilePaths";
-import PostList from "@/components/layout/content/contentCenter/post/PostList";
+import CollectionPostsImageGrid from "@/components/layout/content/collections/CollectionPostsImageGrid";
 import { getProfileByUserName } from "@/configs/client-services";
 import { IconArrowNarrowLeft } from "@tabler/icons-react";
 import Head from "next/head";
@@ -135,35 +134,18 @@ export default function CollectionDetail() {
                     </span>
                     &nbsp;{t("collectionNameTitle")}
                   </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    {(collection.posts ?? []).map((post) => (
-                      <PostList
-                        key={post.id}
-                        postId={post.id}
-                        userName={post.userName || user?.userName || ""}
-                        userLink={`/${post.userName || user?.userName || ""}`}
-                        postLink={`/${post.userName || user?.userName || ""}/posts/${post.id}`}
-                        profileImage={resolveProfileImageUrl(post.profileImage)}
-                        time={post.createDate || ""}
-                        image={
-                          post.image || `/postExample/F5Z00CEaEAAFPgi.jpg`
-                        }
-                        commentCount={post.commentCount ?? 0}
-                        pikCount={post.favoriteCount ?? 0}
-                        isFavorited={post.isFavorited}
-                        admin={false}
-                        postTitle={post.subject}
-                        profile={true}
-                        collectionItem={true}
-                        collections={user?.collections ?? []}
+                  {(collection.posts ?? []).length > 0 ? (
+                    <div className="rounded-lg bg-white p-1 shadow-card sm:p-2">
+                      <CollectionPostsImageGrid
+                        posts={collection.posts ?? []}
+                        fallbackUserName={user?.userName || profileSlug || ""}
                       />
-                    ))}
-                    {(collection.posts ?? []).length === 0 && (
-                      <div className="bg-white flex justify-center items-center min-h-[100px] text-center text-sm rounded">
-                        <span>Bu koleksiyonda henüz gönderi yok.</span>
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="flex min-h-[100px] items-center justify-center rounded-lg bg-white text-center text-sm shadow-card">
+                      <span>Bu koleksiyonda henüz gönderi yok.</span>
+                    </div>
+                  )}
                 </>
               )}
             </div>

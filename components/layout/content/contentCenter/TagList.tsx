@@ -20,6 +20,8 @@ interface TagListProps {
   onTagSelect?: (slug: string, meta?: TagSelectMeta) => void;
   layout?: "list" | "grid";
   showAllTagsButton?: boolean;
+  /** Misafir: etiket seçimi kapalı */
+  readOnly?: boolean;
 }
 
 export default function TagList({
@@ -27,6 +29,7 @@ export default function TagList({
   onTagSelect,
   layout = "list",
   showAllTagsButton = true,
+  readOnly = false,
 }: TagListProps) {
   const { t } = useTranslation();
   const [tags, setTags] = useState<ExploreTagItem[]>([]);
@@ -75,8 +78,13 @@ export default function TagList({
   const renderAllTagsButton = () => (
     <button
       type="button"
-      onClick={() => onTagSelect?.("")}
-      className={tagButtonClass(selectedTag === "")}
+      disabled={readOnly}
+      onClick={() => {
+        if (!readOnly) {
+          onTagSelect?.("");
+        }
+      }}
+      className={`${tagButtonClass(selectedTag === "")} ${readOnly ? "cursor-not-allowed opacity-60" : ""}`}
     >
       {isGrid ? (
         <span className="text-sm font-semibold text-58b4d1">{t("exploreAllTags")}</span>
@@ -92,8 +100,13 @@ export default function TagList({
       <button
         key={tag.slug}
         type="button"
-        onClick={() => onTagSelect?.(tag.slug, { name: tag.name })}
-        className={tagButtonClass(isActive)}
+        disabled={readOnly}
+        onClick={() => {
+          if (!readOnly) {
+            onTagSelect?.(tag.slug, { name: tag.name });
+          }
+        }}
+        className={`${tagButtonClass(isActive)} ${readOnly ? "cursor-not-allowed opacity-60" : ""}`}
       >
         <TagOptionRow
           name={tag.name}
@@ -106,10 +119,7 @@ export default function TagList({
   };
 
   return (
-    <section
-      className="mb-4 mt-4 w-full rounded bg-white lg:mt-0"
-      style={{ boxShadow: "rgba(33, 35, 38, 0.1) 0px 10px 10px -10px" }}
-    >
+    <section className="mb-4 mt-4 w-full rounded-xl border border-gray-100 bg-white shadow-card lg:mt-0">
       <h2 className="border-b border-gray-100 px-4 py-3 text-sm font-bold text-58b4d1">
         {t("tagsMenu")}
       </h2>

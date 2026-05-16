@@ -7,7 +7,7 @@ function encodeUserName(userName: string): string {
 export function profilePath(userName: string): string {
   const slug = userName.trim();
   if (!slug) {
-    return "/home";
+    return "/";
   }
   return `/${encodeUserName(slug)}`;
 }
@@ -15,7 +15,7 @@ export function profilePath(userName: string): string {
 export function profileLikedPath(userName: string): string {
   const slug = userName.trim();
   if (!slug) {
-    return "/home";
+    return "/";
   }
   return `/${encodeUserName(slug)}/liked`;
 }
@@ -23,7 +23,7 @@ export function profileLikedPath(userName: string): string {
 export function profileCollectionsPath(userName: string): string {
   const slug = userName.trim();
   if (!slug) {
-    return "/home";
+    return "/";
   }
   return `/${encodeUserName(slug)}/collections`;
 }

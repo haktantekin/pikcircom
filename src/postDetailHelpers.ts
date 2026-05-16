@@ -4,6 +4,7 @@ export interface PostDetailShape {
   userName?: string;
   createDate?: string;
   image?: string;
+  imageUrls?: Record<string, string>;
   profileImage?: string;
   commentCount?: number;
   favoriteCount?: number;
@@ -36,6 +37,10 @@ export function normalizeApiPostPayload(data: unknown): PostDetailShape | null {
           ? raw.createdDate
           : undefined,
     image: typeof raw.image === "string" ? raw.image : undefined,
+    imageUrls:
+      raw.imageUrls && typeof raw.imageUrls === "object"
+        ? (raw.imageUrls as Record<string, string>)
+        : undefined,
     profileImage:
       typeof raw.profileImage === "string" ? raw.profileImage : undefined,
     commentCount:

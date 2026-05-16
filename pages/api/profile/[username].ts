@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { setApiCacheHeaders } from "@/src/apiResponseCache";
 import { handleProfileMe } from "./lib/profile-me-handler";
 import { AUTH_TOKEN_COOKIE_NAME } from "@/src/server/wp-auth-me-profile";
 
@@ -58,18 +59,13 @@ export default async function handler(
     const { data } = await axios.get(
       `${wordPressBaseUrl}/wp-json/pikcir/v1/profile/${encodeURIComponent(username)}`,
       {
-        headers: {
-          ...(authToken
-            ? { Authorization: `Bearer ${authToken}` }
-            : {}),
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-        },
-        params: { _nocache: Date.now() },
+        headers: authToken
+          ? { Authorization: `Bearer ${authToken}` }
+          : undefined,
       },
     );
 
-    res.setHeader("Cache-Control", "private, no-store, max-age=0");
+    setApiCacheHeaders(res, "profile");
 
     return res.status(200).json({
       user: data.user ?? null,

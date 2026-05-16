@@ -69,6 +69,7 @@ interface ProfileCenterLayoutProps {
   userCheck: number;
   activeTab?: ProfileTab;
   onProfileUpdated?: () => void;
+  readOnly?: boolean;
 }
 
 export default function ProfileCenterLayout({
@@ -76,6 +77,7 @@ export default function ProfileCenterLayout({
   userCheck,
   activeTab = "piklerim",
   onProfileUpdated,
+  readOnly = false,
 }: ProfileCenterLayoutProps) {
   return (
     <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
@@ -96,11 +98,13 @@ export default function ProfileCenterLayout({
             key={`profile-header-${user?.userName ?? "anon"}`}
             user={user}
             onProfileUpdated={onProfileUpdated}
+            readOnly={readOnly}
           />
           <ProfileContent
             key={`profile-content-${user?.userName ?? "anon"}-${activeTab}`}
             user={user}
             activeTab={activeTab}
+            readOnly={readOnly}
           />
         </>
       )}

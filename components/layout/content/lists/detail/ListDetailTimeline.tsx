@@ -1,4 +1,5 @@
 import { listPostPath } from "@/src/listPaths";
+import { pickPostImageUrl } from "@/src/postImageUrl";
 import ListDetailItem from "./ListDetailItem";
 import type { ListDetailPost } from "./ListDetailGrid";
 
@@ -24,7 +25,10 @@ export default function ListDetailTimeline({ posts }: ListDetailTimelineProps) {
           <ListDetailItem
             key={post.id}
             link={href}
-            image={post.image || "/postExample/F5Z00CEaEAAFPgi.jpg"}
+            image={
+              pickPostImageUrl(post.image, post.imageUrls, "thumb") ||
+              "/postExample/F5Z00CEaEAAFPgi.jpg"
+            }
             user={author ? `@${author}` : ""}
             time={time}
             title={post.subject}

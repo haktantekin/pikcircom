@@ -15,6 +15,8 @@ export interface PostPikiToggleProps {
     isFavorited: boolean;
   }) => void;
   className?: string;
+  /** Misafir: tıklanamaz, sadece sayı */
+  readOnly?: boolean;
 }
 
 export default function PostPikiToggle({
@@ -24,6 +26,7 @@ export default function PostPikiToggle({
   variant,
   onFavoriteMetaChange,
   className = "",
+  readOnly = false,
 }: PostPikiToggleProps) {
   const { t } = useTranslation();
   const canPik = useMemo(() => isNumericPostId(postId), [postId]);
@@ -62,6 +65,29 @@ export default function PostPikiToggle({
       setBusy(false);
     }
   };
+
+  if (readOnly) {
+    if (variant === "compact") {
+      return (
+        <span
+          className={`flex items-center gap-1 text-sm font-bold text-gray-500 ${className}`}
+          title={t("pikAdd")}
+        >
+          <Piki />
+          {count}
+        </span>
+      );
+    }
+    return (
+      <span
+        className={`flex items-center gap-1 text-sm font-bold text-gray-500 ${className}`}
+        title={t("pikAdd")}
+      >
+        <Piki />
+        <span>{t("pikAddVerb")}</span>
+      </span>
+    );
+  }
 
   if (!canPik) {
     if (variant === "compact") {

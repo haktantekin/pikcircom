@@ -1,6 +1,8 @@
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
+import { setApiCacheHeaders } from "@/src/apiResponseCache";
+
 const AUTH_COOKIE_NAME = "auth_token";
 
 const getWordPressBaseUrl = () => {
@@ -49,6 +51,8 @@ export default async function handler(
         },
       },
     );
+
+    setApiCacheHeaders(res, "explore");
 
     return res.status(status).json({
       tag: data.tag ?? "",

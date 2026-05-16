@@ -3,8 +3,12 @@
 @tailwind base;
 
 @layer base {
+  html {
+    @apply min-h-screen;
+  }
+
   body {
-    @apply font-pt
+    @apply min-h-screen bg-gradient-to-b from-[#fafafa] via-f5f3f4 to-[#eeeff1] bg-fixed font-pt text-202124 antialiased;
   }
 
   input,
@@ -13,14 +17,11 @@
   }
 
   img,
-  video {
-    @apply max-w-none
-  }
-
-  img,
   svg,
   video {
-    @apply max-w-none
+    @apply max-w-none select-none;
+    -webkit-user-drag: none;
+    user-drag: none;
   }
 }
 
@@ -28,15 +29,19 @@
 @tailwind utilities;
 
 #__next {
-  @apply w-full h-full;
-}
-
-body{
-  @apply bg-f5f3f4
+  @apply min-h-screen w-full;
 }
 
 .container {
-  @apply mx-auto pl-3 pr-3 lg:pl-0 lg:pr-0;
+  @apply mx-auto max-w-[1200px] px-3 sm:px-4 lg:px-6;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 .shadow-text {
@@ -83,5 +88,6 @@ body{
   @apply py-2
 }
 .post-item .mantine-Spoiler-control{
-  @apply text-center w-full text-sm text-white font-bold z-10 absolute bottom-0 bg-343a40 bg-opacity-75 !border-b !border-gray-200
+  /* absolute bottom-0 içerikle çakışıyordu; akışta + 10px boşluk */
+  @apply relative mt-2.5 text-center w-full text-sm text-white font-bold z-10 bg-343a40 bg-opacity-75 !border-b !border-gray-200
 }

@@ -46,9 +46,10 @@ interface PostItemProps {
     posts?: { id: string }[];
   }[]) => void
   postLink?: string;
+  readOnly?: boolean;
 }
 
-export default function PostItem({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, collections, onCollectionsChange }: PostItemProps) {
+export default function PostItem({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, collections, onCollectionsChange, readOnly = false }: PostItemProps) {
   const [pikOpened, setPikOpened] = useState(false);
   const [reportOpened, setReportOpened] = useState(false);
   const [openDraw, { open, close }] = useDisclosure(false);
@@ -80,7 +81,9 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
                 <IconAdFilled size={15} className="-ml-1 text-202124" />
               </Tooltip>
             }
+            {!readOnly ? (
             <Link href={"javascript:;"} className="flex flex-row ml-0 text-343a40 text-xs">{t("followUp")}</Link>
+            ) : null}
           </div>
           <div className="text-343a40 font-light flex items-center text-sm gap-1">
             <IconAlarm size={10} /> {formatRelativeTime(time, i18n.language)}
@@ -90,7 +93,14 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
         <div className="overflow-hidden relative post-item">
           <div className="overflow-hidden block">
             <div className="absolute w-full h-full z-5"></div>
-            <Image alt="profile" width={740} height={200} className="w-full m-auto max-h-[1000px]" src={image} />
+            <Image
+              alt="profile"
+              width={740}
+              height={200}
+              sizes="(max-width: 1024px) 100vw, 740px"
+              className="w-full m-auto max-h-[1000px]"
+              src={image}
+            />
           </div>
         </div>
         <div className={`flex flex-col items-start p-4`}>
@@ -98,6 +108,7 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
         </div>
         <div className="flex gap-5 p-4 justify-start min-h-[30px] lg:min-h-[40px] items-center border-t ">
           <div className="flex justify-between gap-2 lg:gap-4 items-center flex-col lg:flex-row ">
+            {!readOnly ? (
             <div className="flex gap-2 border-b border-58b4d1 border-dashed">
               <button type="button" className="flex gap-1 items-center text-sm" onClick={() => setPikOpened(true)}>
                 <span className="font-bold text-58b4d1">{livePikCount}</span>{" "}
@@ -107,22 +118,32 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
                 <PikModal postId={postId} opened={pikOpened} />
               </Modal>
             </div>
+            ) : (
+            <div className="flex gap-1 items-center text-sm font-bold text-gray-500">
+              <span>{livePikCount}</span> Pik
+            </div>
+            )}
           </div>
           <PostPikiToggle
             postId={postId}
             favoriteCount={livePikCount}
             isFavorited={isFavorited}
             variant="labeled"
-            onFavoriteMetaChange={({ favoriteCount }) => setLivePikCount(favoriteCount)}
+            readOnly={readOnly}
+            onFavoriteMetaChange={readOnly ? undefined : ({ favoriteCount }) => setLivePikCount(favoriteCount)}
           />
-          <button onClick={open} className="flex items-center gap-1 text-sm">
+          {!readOnly ? (
+          <button type="button" onClick={open} className="flex items-center gap-1 text-sm">
             <IconBookmarkPlus size={20} stroke={1.0} />
             <span className="hidden lg:inline-block">{t("addCollection")}</span>
           </button>
+          ) : null}
+          {!readOnly ? (
           <Drawer opened={openDraw} onClose={close} title={t("collection")}>
             <CollapseCollectionList postId={postId} collections={collections} onCollectionsChange={onCollectionsChange} opened={openDraw} />
           </Drawer>
-          <div className="ml-auto flex gap-2">
+          ) : null}
+          <div className={`ml-auto flex gap-2 ${readOnly ? "hidden" : ""}`}>
             <div className="flex items-center gap-1 text-sm text-gray-500 font-bold">
               {liveCommentCount}
             </div>
@@ -131,7 +152,7 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
               postTitle={postTitle}
               imageUrl={image}
             />
-            <button className="flex items-center gap-1 text-sm text-126782" onClick={() => setReportOpened(true)}>
+            <button type="button" className="flex items-center gap-1 text-sm text-126782" onClick={() => setReportOpened(true)}>
               <IconInfoTriangle size={20} stroke={1.0} />
             </button>
             <Modal opened={reportOpened} onClose={() => setReportOpened(false)} centered title={t("report")}>
@@ -142,9 +163,14 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
               />
             </Modal>
           </div>
+          {readOnly ? (
+            <div className="ml-auto flex items-center gap-1 text-sm text-gray-500 font-bold">
+              {liveCommentCount}
+            </div>
+          ) : null}
         </div>
 
-        <PostCollapse postId={postId} onCommentCountChange={setLiveCommentCount} />
+        {!readOnly ? <PostCollapse postId={postId} onCommentCountChange={setLiveCommentCount} /> : null}
       </div>
     </>
   )

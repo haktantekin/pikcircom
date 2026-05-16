@@ -92,13 +92,13 @@ export const getExplorePosts = ({ tag, perPage } = {}) =>
     },
   });
 
-export const getHomeFeed = ({ scope = "karma", perPage } = {}) =>
+export const getHomeFeed = ({ scope = "karma", perPage, refresh = false } = {}) =>
   client.get(`/api/home-feed`, {
     params: {
       scope,
       ...(perPage ? { per_page: perPage } : {}),
-      _t: Date.now(),
     },
+    pikcirRefresh: refresh,
   });
 
 export const getLists = ({ period } = {}) =>
@@ -129,8 +129,10 @@ export const unfavoritePost = (postId) =>
 export const getPostFavorites = (postId) =>
   client.get(`/api/posts/favorites/${encodeURIComponent(postId)}`);
 
-export const getPostComments = (postId) =>
-  client.get(`/api/posts/${encodeURIComponent(postId)}/comments`);
+export const getPostComments = (postId, { refresh = false } = {}) =>
+  client.get(`/api/posts/${encodeURIComponent(postId)}/comments`, {
+    pikcirRefresh: refresh,
+  });
 
 export const createPostComment = (postId, content, parentId) => {
   const body = { content };
@@ -163,9 +165,9 @@ export const search = ({ q, type = "posts", perPage } = {}) =>
     },
   });
 
-export const getSidebarSuggestions = () =>
+export const getSidebarSuggestions = ({ refresh = false } = {}) =>
   client.get(`/api/sidebar-suggestions`, {
-    params: { _t: Date.now() },
+    pikcirRefresh: refresh,
   });
 
 export const getNotifications = (params = {}) =>

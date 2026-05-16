@@ -6,11 +6,13 @@ import type { SearchPostItem, SearchTagItem } from "@/src/searchTypes";
 interface SearchHashtagResultsProps {
   hashtags: SearchTagItem[];
   posts: SearchPostItem[];
+  readOnly?: boolean;
 }
 
 export default function SearchHashtagResults({
   hashtags,
   posts,
+  readOnly = false,
 }: SearchHashtagResultsProps) {
   const { t } = useTranslation();
 
@@ -47,7 +49,7 @@ export default function SearchHashtagResults({
       {posts.length > 0 ? (
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-126782">{t("searchHashtagPostsSection")}</h2>
-          <SearchPostResults posts={posts} />
+          <SearchPostResults posts={posts} readOnly={readOnly} />
         </section>
       ) : null}
     </div>

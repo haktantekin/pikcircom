@@ -33,6 +33,7 @@ export interface SearchPostItem {
   isFavorited?: boolean;
   authorIsFollowing?: boolean;
   image?: string;
+  imageUrls?: Record<string, string>;
   profileImage?: string;
   tags?: Array<{ slug: string; name: string; imageUrl?: string }>;
 }

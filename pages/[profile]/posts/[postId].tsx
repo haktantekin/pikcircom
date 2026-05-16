@@ -1,6 +1,7 @@
 import ContentLeft from "@/components/layout/content/ContentLeft";
 import ContentRight from "@/components/layout/content/ContentRight";
 import { resolvePostAuthorProfileImage } from "@/src/avatarUrl";
+import { pickPostImageUrl } from "@/src/postImageUrl";
 import PostItem from "@/components/layout/content/post/PostItem";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
@@ -16,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useGuestFeedReadOnly } from "@/src/useGuestFeedReadOnly";
 
 interface ProfileData {
   userName?: string;
@@ -31,6 +33,7 @@ interface ProfileData {
 export default function PostDetail() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { feedReadOnly } = useGuestFeedReadOnly();
   const [post, setPost] = useState<PostDetailShape | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -150,7 +153,8 @@ export default function PostDetail() {
                   )}
                   time={post.createDate || ""}
                   image={
-                    post.image || "/postExample/F5Z00CEaEAAFPgi.jpg"
+                    pickPostImageUrl(post.image, post.imageUrls, "large") ||
+                    "/postExample/F5Z00CEaEAAFPgi.jpg"
                   }
                   commentCount={post.commentCount ?? 0}
                   pikCount={post.favoriteCount ?? 0}
@@ -158,10 +162,11 @@ export default function PostDetail() {
                   admin={false}
                   postTitle={post.subject}
                   postLink={`/${post.userName || profileSlug || ""}/posts/${post.id}`}
+                  readOnly={feedReadOnly}
                 />
               )}
             </div>
-            <ContentRight />
+            <ContentRight readOnly={feedReadOnly} />
           </div>
         </div>
       </main>

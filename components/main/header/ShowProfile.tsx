@@ -30,9 +30,9 @@ export default function ShowProfile({ user }: ShowProfileProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
   const userName = user?.userName?.trim() ?? "";
-  const profileHref = userName ? profilePath(userName) : "/home";
-  const likedHref = userName ? profileLikedPath(userName) : "/home";
-  const collectionsHref = userName ? profileCollectionsPath(userName) : "/home";
+  const profileHref = userName ? profilePath(userName) : "/login";
+  const likedHref = userName ? profileLikedPath(userName) : "/login";
+  const collectionsHref = userName ? profileCollectionsPath(userName) : "/login";
 
   const handleLogout = async () => {
     try {

@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { setApiCacheHeaders } from "@/src/apiResponseCache";
 
 const AUTH_COOKIE_NAME = "auth_token";
 
@@ -40,14 +41,8 @@ export default async function handler(
   try {
     if (req.method === "GET") {
       /** Herkese açık liste; geçersiz/expired Bearer bazı ortamlarda 401 üretebiliyor, axios da ana sayfaya atıyor. */
-      const { data, status } = await axios.get(url, {
-        headers: {
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-        },
-        params: { _nocache: Date.now() },
-      });
-      res.setHeader("Cache-Control", "private, no-store, max-age=0");
+      const { data, status } = await axios.get(url);
+      setApiCacheHeaders(res, "comments");
       return res.status(status).json(data);
     }
 

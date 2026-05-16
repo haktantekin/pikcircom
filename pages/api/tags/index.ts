@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { setApiCacheHeaders } from "@/src/apiResponseCache";
 
 const AUTH_COOKIE_NAME = "auth_token";
 
@@ -37,6 +38,8 @@ export default async function handler(
           : undefined,
       },
     );
+
+    setApiCacheHeaders(res, "tags");
 
     return res.status(status).json({
       tags: data.tags ?? [],

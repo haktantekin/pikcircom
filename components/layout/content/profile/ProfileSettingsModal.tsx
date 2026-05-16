@@ -16,12 +16,16 @@ import { DatePickerInput } from "@mantine/dates";
 import { showNotification } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
-import { pickAvatarUrlFromMap } from "@/src/avatarUrl";
+import { pickAvatarUrlFromMap, pickCoverUrlFromMap } from "@/src/avatarUrl";
 import { optimizeProfileImage } from "@/src/profileImage";
 import { updateProfile } from "@/configs/client-services";
+import CoverPhotoEditor, {
+  type CoverPhotoEditorHandle,
+} from "./CoverPhotoEditor";
 import ProfileAccountOverview, {
   type ProfileAccountOverviewStats,
 } from "./ProfileAccountOverview";
+import { fetchAuthProfile } from "@/src/fetchAuthProfile";
 
 export type ProfileSettingsPublicSlice = {
   userName?: string;
@@ -73,12 +77,11 @@ export default function ProfileSettingsModal({
 }: ProfileSettingsModalProps) {
   const { t } = useTranslation();
   const avatarResetRef = useRef<() => void>(null);
-  const coverResetRef = useRef<() => void>(null);
+  const coverEditorRef = useRef<CoverPhotoEditorHandle>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [session, setSession] = useState<SessionShape | null>(null);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
-  const [coverDataUrl, setCoverDataUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [accountOverview, setAccountOverview] =
     useState<ProfileAccountOverviewStats | null>(null);
@@ -104,23 +107,18 @@ export default function ProfileSettingsModal({
       setLoading(true);
       setLoadError(null);
       setAvatarDataUrl(null);
-      setCoverDataUrl(null);
       avatarResetRef.current?.();
-      coverResetRef.current?.();
 
       try {
-        const response = await fetch("/api/auth/profile", {
-          credentials: "include",
-          cache: "no-store",
-        });
+        const result = await fetchAuthProfile({ refresh: true });
 
         if (cancelled) {
           return;
         }
 
-        if (!response.ok) {
+        if (!result.ok) {
           const message =
-            response.status === 401
+            result.status === 401
               ? "Profili guncellemek icin giris yapmalisin."
               : "Profil bilgileri yuklenemedi.";
           setLoadError(message);
@@ -128,7 +126,7 @@ export default function ProfileSettingsModal({
           return;
         }
 
-        const data = (await response.json()) as SessionShape;
+        const data = result.data as SessionShape;
         setSession(data);
 
         form.setValues({
@@ -243,41 +241,22 @@ export default function ProfileSettingsModal({
     };
   }, [session?.userName]);
 
-  const coverBackgroundUrl = useMemo(() => {
-    if (coverDataUrl) {
-      return coverDataUrl;
-    }
-
-    const fromSession =
-      typeof session?.coverUrls?.full === "string"
-        ? session.coverUrls.full
-        : typeof session?.coverImageUrl === "string"
-          ? session.coverImageUrl
-          : null;
-
-    if (fromSession) {
-      return fromSession;
-    }
-
-    const fromPublic =
-      typeof publicProfileUser?.coverUrls?.full === "string"
-        ? publicProfileUser.coverUrls.full
-        : typeof publicProfileUser?.coverImageUrl === "string"
-          ? publicProfileUser.coverImageUrl
-          : null;
-
-    if (fromPublic) {
-      return fromPublic;
-    }
-
-    return "/coverExample.jpg";
-  }, [
-    coverDataUrl,
-    publicProfileUser?.coverImageUrl,
-    publicProfileUser?.coverUrls?.full,
-    session?.coverImageUrl,
-    session?.coverUrls?.full,
-  ]);
+  const coverBackgroundUrl = useMemo(
+    () =>
+      pickCoverUrlFromMap(
+        {
+          ...(publicProfileUser?.coverUrls as Record<string, unknown> | undefined),
+          ...(session?.coverUrls as Record<string, unknown> | undefined),
+        },
+        session?.coverImageUrl ?? publicProfileUser?.coverImageUrl ?? null,
+      ),
+    [
+      publicProfileUser?.coverImageUrl,
+      publicProfileUser?.coverUrls,
+      session?.coverImageUrl,
+      session?.coverUrls,
+    ],
+  );
 
   const avatarImageSrc = useMemo(() => {
     if (avatarDataUrl) {
@@ -301,26 +280,6 @@ export default function ProfileSettingsModal({
       showNotification({
         title: "Hata",
         message: "Profil fotografi islenemedi.",
-        color: "red",
-      });
-    }
-  };
-
-  const handleCoverFile = async (file: File | null) => {
-    if (!file) {
-      return;
-    }
-
-    try {
-      const optimized = await optimizeProfileImage(file, {
-        maxDimension: 1920,
-        maxBytes: 2 * 1024 * 1024,
-      });
-      setCoverDataUrl(optimized);
-    } catch {
-      showNotification({
-        title: "Hata",
-        message: "Kapak fotografi islenemedi.",
         color: "red",
       });
     }
@@ -354,8 +313,19 @@ export default function ProfileSettingsModal({
         payload.profileImageData = avatarDataUrl;
       }
 
-      if (coverDataUrl) {
-        payload.coverImageData = coverDataUrl;
+      try {
+        const coverCropped = await coverEditorRef.current?.getCroppedDataUrl();
+        if (coverCropped) {
+          payload.coverImageData = coverCropped;
+        }
+      } catch {
+        showNotification({
+          title: "Hata",
+          message: "Kapak fotografi islenemedi.",
+          color: "red",
+        });
+        setSubmitting(false);
+        return;
       }
 
       await updateProfile(payload);
@@ -398,27 +368,12 @@ export default function ProfileSettingsModal({
   }
 
   return (
-    <form className="space-y-2" onSubmit={form.onSubmit(handleSubmit)}>
-      <div
-        className="relative z-0 mb-4 flex min-h-[200px] items-center justify-center overflow-hidden rounded-tl rounded-tr bg-cover bg-center bg-no-repeat before:absolute before:left-0 before:top-0 before:z-0 before:h-full before:w-full before:bg-black before:bg-opacity-50"
-        style={{ backgroundImage: `url(${coverBackgroundUrl})` }}
-      >
-        <FileButton
-          resetRef={coverResetRef}
-          onChange={handleCoverFile}
-          accept="image/png,image/jpeg"
-        >
-          {(props) => (
-            <button
-              type="button"
-              className="relative z-[1] rounded-full bg-white p-4 text-126782"
-              {...props}
-            >
-              <IconPhotoEdit color="#58b4d1" />
-            </button>
-          )}
-        </FileButton>
-      </div>
+    <form className="space-y-4" onSubmit={form.onSubmit(handleSubmit)}>
+      <CoverPhotoEditor
+        ref={coverEditorRef}
+        imageUrl={coverBackgroundUrl}
+        className="mb-4"
+      />
 
       <div className="relative -mt-16 left-1/2 w-28 -translate-x-1/2">
         <FileButton
@@ -430,7 +385,7 @@ export default function ProfileSettingsModal({
             <button
               type="button"
               {...props}
-              className="relative h-full w-full overflow-hidden rounded-full border-2 border-white"
+              className="relative h-full w-full overflow-hidden rounded-full border-4 border-white shadow-md ring-2 ring-gray-100"
             >
               <Image
                 alt=""

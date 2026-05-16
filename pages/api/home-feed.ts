@@ -5,6 +5,7 @@ import {
   type HomeFeedScope,
 } from "@/src/server/home-feed";
 import { getWordPressSiteRoot } from "@/src/server/wp-auth-me-profile";
+import { setApiCacheHeaders } from "@/src/apiResponseCache";
 
 const AUTH_COOKIE_NAME = "auth_token";
 
@@ -45,7 +46,7 @@ export default async function handler(
       perPage,
     );
 
-    res.setHeader("Cache-Control", "private, no-store, max-age=0");
+    setApiCacheHeaders(res, "feed");
 
     return res.status(200).json(result);
   } catch (error) {

@@ -35,7 +35,17 @@ module.exports = {
         "pt": ['PT Sans, sans-serif'],
         "black": ['Palanquin Dark, sans-serif'],
       },
-     
+      borderRadius: {
+        card: "1rem",
+        "card-sm": "0.75rem",
+      },
+      boxShadow: {
+        card:
+          "0 4px 14px -4px rgba(33, 35, 38, 0.08), 0 2px 6px -2px rgba(33, 35, 38, 0.06)",
+        "card-hover":
+          "0 8px 24px -6px rgba(33, 35, 38, 0.12), 0 4px 8px -4px rgba(33, 35, 38, 0.08)",
+      },
+
       colors:{
       '202124':'#23233b',
       'eeedfd': '#eeedfd',

@@ -5,6 +5,7 @@ import {
   fetchViewerFollowingUserNames,
   type SidebarRecentUser,
 } from "@/src/server/sidebar-suggestions";
+import { setApiCacheHeaders } from "@/src/apiResponseCache";
 
 const AUTH_COOKIE_NAME = "auth_token";
 
@@ -53,7 +54,6 @@ export default async function handler(
               Authorization: `Bearer ${authToken}`,
             }
           : undefined,
-        params: { _nocache: Date.now() },
       },
     );
 
@@ -74,7 +74,7 @@ export default async function handler(
       );
     }
 
-    res.setHeader("Cache-Control", "private, no-store, max-age=0");
+    setApiCacheHeaders(res, "sidebar");
 
     return res.status(status).json({
       mostPopularUsers: data.mostPopularUsers ?? [],

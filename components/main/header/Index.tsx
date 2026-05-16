@@ -12,6 +12,7 @@ import Search from "../Search";
 import { useTranslation } from "react-i18next";
 import { pickAvatarUrlFromMap } from "@/src/avatarUrl";
 import { subscribeAuthSessionChanged } from "@/src/authSessionEvent";
+import { fetchAuthProfile } from "@/src/fetchAuthProfile";
 interface HeaderProps{
   user?: {
     userName?: string;
@@ -24,50 +25,42 @@ export default function Header({user}: HeaderProps) {
   const [postModalKey, setPostModalKey] = useState(0);
   const [profile, setProfile] = useState(false);
   const [currentUser, setCurrentUser] = useState<HeaderProps['user'] | null>(null);
+  const [sessionResolved, setSessionResolved] = useState(false);
   const { t } = useTranslation();
   useEffect(() => {
     let isMounted = true;
 
-    const loadCurrentUser = async () => {
+    const loadCurrentUser = async (refresh = false) => {
       try {
-        const response = await fetch(
-          `/api/auth/profile?_=${Date.now()}`,
-          {
-            credentials: "include",
-            cache: "no-store",
-          },
-        );
+        const result = await fetchAuthProfile({ refresh });
 
         if (!isMounted) {
           return;
         }
 
-        if (!response.ok) {
+        setSessionResolved(true);
+
+        if (!result.ok || !result.data) {
           setCurrentUser(null);
-          return;
-        }
-
-        const data = await response.json();
-
-        if (!isMounted) {
           return;
         }
 
         setCurrentUser({
-          userName: data?.userName,
-          avatarUrls: data?.avatarUrls ?? {},
+          userName: result.data.userName,
+          avatarUrls: result.data.avatarUrls ?? {},
         });
       } catch {
         if (isMounted) {
           setCurrentUser(null);
+          setSessionResolved(true);
         }
       }
     };
 
-    loadCurrentUser();
+    void loadCurrentUser();
     const unsubscribe = subscribeAuthSessionChanged(() => {
       setCurrentUser(null);
-      loadCurrentUser();
+      void loadCurrentUser(true);
     });
 
     return () => {
@@ -78,6 +71,8 @@ export default function Header({user}: HeaderProps) {
 
   /** Oturumdaki kullanıcı — yalnızca /api/auth/profile; `user` prop bazen başka bir profil (ör. ziyaret edilen sayfa). */
   const sessionUser = currentUser;
+  const isMember = Boolean(sessionUser?.userName);
+  const showGuestHeader = sessionResolved && !isMember;
 
   /** Köşe avatarı: önce oturum, yoksa sayfanın verdiği `user` (ör. profil yüklenene kadar). */
   const avatarUser = sessionUser ?? user ?? null;
@@ -92,11 +87,11 @@ export default function Header({user}: HeaderProps) {
   };
 
   return (
-    <header className={`h-12 w-full bg-white flex relative`} style={{ boxShadow: 'rgba(33, 35, 38, 0.1) 0px 10px 10px -10px' }}>
+    <header className="sticky top-0 z-30 flex h-14 w-full items-center border-b border-gray-100/90 bg-white/95 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-white/80">
       <div className="container">
         <div className="grid grid-cols-12 w-full min-h-full">
           <div className="col-span-12 lg:col-span-2">
-            <Link href="/home" className="flex justify-center items-center gap-2 h-full">
+            <Link href="/" className="flex h-full items-center justify-center gap-2">
               <Image src="/logo.png" alt="Pickup" width={32} height={40} className="w-[32px] h-[40px]" priority></Image>
               <div className="text-sm font-bold text-58b4d1 flex justify-center items-center">
                 <IconLetterP size={20} stroke={2.0} />
@@ -112,6 +107,17 @@ export default function Header({user}: HeaderProps) {
             <Search />
           </div>
           <div className="col-span-2 lg:col-span-3 flex justify-end items-center gap-3 h-full absolute lg:relative right-4 lg:right-0 top-0">
+            {!sessionResolved ? (
+              <span className="inline-block h-9 w-24 shrink-0 rounded-lg bg-gray-100 animate-pulse" aria-hidden />
+            ) : showGuestHeader ? (
+              <Link
+                href="/login"
+                className="whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold text-58b4d1 transition-colors hover:bg-58b4d1/10"
+              >
+                {t("logIn")}
+              </Link>
+            ) : (
+              <>
             <div className="relative cursor-pointer leading-[0] hidden lg:inline-block" title={t("notification")}>
               <Notification notificationAnchor />
             </div>
@@ -136,7 +142,7 @@ export default function Header({user}: HeaderProps) {
               <Menu shadow="md" width={150} withArrow>
                 <Menu.Target>
                   <button className="bg-none hover:bg-transparent px-0 mx-0">
-                    <Image alt="profile" src={pickAvatarUrlFromMap(avatarUser?.avatarUrls)} width={400} height={400} className="w-9 h-9 rounded-full border border-white object-cover" />
+                    <Image alt="profile" src={pickAvatarUrlFromMap(avatarUser?.avatarUrls)} width={400} height={400} className="h-9 w-9 rounded-full border border-gray-100 object-cover shadow-card ring-2 ring-white" />
                   </button>
                 </Menu.Target>
                 <Menu.Dropdown className="py-2">
@@ -145,11 +151,13 @@ export default function Header({user}: HeaderProps) {
               </Menu>
             </div>
             <div className="relative cursor-pointer justify-center flex lg:hidden" title={t("myProfile")}>
-              <button onClick={() => setProfile(true)}><Image alt="profile" src={pickAvatarUrlFromMap(avatarUser?.avatarUrls)} width={400} height={400} className="w-9 h-9 rounded-full border border-white object-cover" /></button>
+              <button type="button" onClick={() => setProfile(true)}><Image alt="profile" src={pickAvatarUrlFromMap(avatarUser?.avatarUrls)} width={400} height={400} className="h-9 w-9 rounded-full border border-gray-100 object-cover shadow-card ring-2 ring-white" /></button>
               <Drawer opened={profile} onClose={() => setProfile(false)} title={t("menus")}>
                 <ShowProfileMobile user={sessionUser ?? undefined} />
               </Drawer>
             </div>
+              </>
+            )}
           </div>
         </div>
       </div>

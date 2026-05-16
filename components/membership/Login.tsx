@@ -47,7 +47,7 @@ export default function LoginMember() {
     if (loginUser.fulfilled.match(action)) {
       form.reset();
       dispatchAuthSessionChanged();
-      window.location.assign("/home");
+      window.location.assign("/");
     }
   };
 

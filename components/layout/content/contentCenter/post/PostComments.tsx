@@ -1,4 +1,5 @@
-import { createPostComment } from "@/configs/client-services";
+import { createPostComment, getPostComments } from "@/configs/client-services";
+import { fetchAuthProfile } from "@/src/fetchAuthProfile";
 import { buildCommentTree, type CommentItem } from "@/src/commentTree";
 import { IconCornerDownRight, IconX } from "@tabler/icons-react";
 import Link from "next/link";
@@ -28,23 +29,18 @@ export default function PostComments({
   const [body, setBody] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [viewerUserName, setViewerUserName] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const onCountRef = useRef(onCommentCountChange);
   onCountRef.current = onCommentCountChange;
 
-  const loadAll = useCallback(async () => {
+  const loadAll = useCallback(async (forceRefresh = false) => {
     if (!postId) return;
     setLoading(true);
     setLoadError(null);
     try {
-      const res = await fetch(
-        `/api/posts/${encodeURIComponent(postId)}/comments?_=${Date.now()}`,
-        { credentials: "include", cache: "no-store" },
-      );
-      if (!res.ok) {
-        throw new Error(String(res.status));
-      }
-      const data = (await res.json()) as {
+      const res = await getPostComments(postId, { refresh: forceRefresh });
+      const data = res.data as {
         comments?: unknown;
         commentCount?: unknown;
       };
@@ -72,7 +68,7 @@ export default function PostComments({
     }
     let cancelled = false;
     (async () => {
-      await loadAll();
+      await loadAll(true);
       if (cancelled) return;
     })();
     return () => {
@@ -82,13 +78,22 @@ export default function PostComments({
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/auth/profile", { credentials: "include", cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (cancelled || !data?.userName) return;
-        setViewerUserName(String(data.userName));
+    fetchAuthProfile()
+      .then((result) => {
+        if (cancelled) return;
+        setViewerUserName(
+          result.ok && result.data?.userName
+            ? String(result.data.userName).trim() || null
+            : null,
+        );
+        setAuthChecked(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) {
+          setViewerUserName(null);
+          setAuthChecked(true);
+        }
+      });
     return () => {
       cancelled = true;
     };
@@ -112,7 +117,7 @@ export default function PostComments({
       if (newComment) {
         setComments((prev) => [...prev, newComment]);
       } else {
-        await loadAll();
+        await loadAll(true);
       }
       setBody("");
       setReplyTarget(null);
@@ -187,7 +192,9 @@ export default function PostComments({
           </button>
         </div>
       </div>
-      <p className="text-xs text-gray-500 px-1 pb-2">{t("commentLoginHint")}</p>
+      {authChecked && !viewerUserName ? (
+        <p className="text-xs text-gray-500 px-1 pb-2">{t("commentLoginHint")}</p>
+      ) : null}
       {loadError && (
         <p className="text-xs text-red-600 px-1 pb-2">{loadError}</p>
       )}

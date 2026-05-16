@@ -4,8 +4,11 @@ import ContentRight from "@/components/layout/content/ContentRight";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
 import Head from "next/head";
+import { useGuestFeedReadOnly } from "@/src/useGuestFeedReadOnly";
 
 export default function Explore() {
+  const { feedReadOnly } = useGuestFeedReadOnly();
+
   return (
     <>
       <Head>
@@ -17,8 +20,8 @@ export default function Explore() {
         <div className="container lg:mt-3">
           <div className="grid grid-cols-12 gap-4">
             <ContentLeft />
-            <ContentCenter type="explore" />
-            <ContentRight />
+            <ContentCenter type="explore" feedReadOnly={feedReadOnly} />
+            <ContentRight readOnly={feedReadOnly} />
           </div>
         </div>
       </main>

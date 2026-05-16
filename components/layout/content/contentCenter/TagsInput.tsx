@@ -5,6 +5,7 @@ import { IconAlertCircle } from "@tabler/icons-react";
 import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 import { getCollections, getLists, getTags } from "@/configs/client-services";
 import { profileCollectionsPath } from "@/src/profilePaths";
+import { fetchAuthProfile } from "@/src/fetchAuthProfile";
 import TagOptionRow from "./TagOptionRow";
 
 interface TagsInputProps {
@@ -73,11 +74,10 @@ export default function TagsInput({
   const [profileCollectionsHref, setProfileCollectionsHref] = useState("/home");
 
   useEffect(() => {
-    fetch("/api/auth/profile", { credentials: "include", cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.userName) {
-          setProfileCollectionsHref(profileCollectionsPath(data.userName));
+    fetchAuthProfile()
+      .then((result) => {
+        if (result.ok && result.data?.userName) {
+          setProfileCollectionsHref(profileCollectionsPath(result.data.userName));
         }
       })
       .catch(() => undefined);
