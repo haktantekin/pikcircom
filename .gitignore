@@ -376,7 +376,7 @@ node_modules/
 \.next\
 .swc/
 .*.env
-server/
+/server/
 yarn.lock
 wp-theme
 .cursor
