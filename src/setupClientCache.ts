@@ -1,4 +1,8 @@
-import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
+import type {
+  AxiosInstance,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from "axios";
 import {
   buildCacheKey,
   getCached,
@@ -62,6 +66,6 @@ export function setupClientCache(client: AxiosInstance): void {
       ttl,
       () => originalGet<T>(url, config),
       { force: refresh },
-    ) as ReturnType<typeof originalGet<T>>;
-  };
+    ) as Promise<AxiosResponse<T>>;
+  } as AxiosInstance["get"];
 }

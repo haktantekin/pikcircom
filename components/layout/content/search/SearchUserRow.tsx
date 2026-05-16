@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { profilePath } from "@/src/profilePaths";
-import { resolveProfileImageUrl } from "@/src/avatarUrl";
+import {
+  pickAvatarUrlFromMap,
+  resolveProfileImageUrl,
+} from "@/src/avatarUrl";
 import type { SearchUserItem } from "@/src/searchTypes";
 
 interface SearchUserRowProps {
@@ -17,7 +20,15 @@ export default function SearchUserRow({ user }: SearchUserRowProps) {
       className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-58b4d1"
     >
       <Image
-        src={resolveProfileImageUrl(user.profileImage || user.avatarUrls)}
+        src={resolveProfileImageUrl(
+          typeof user.profileImage === "string"
+            ? user.profileImage
+            : pickAvatarUrlFromMap(
+                user.avatarUrls && typeof user.avatarUrls === "object"
+                  ? user.avatarUrls
+                  : null,
+              ),
+        )}
         alt=""
         width={48}
         height={48}

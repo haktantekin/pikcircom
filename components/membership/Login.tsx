@@ -7,7 +7,7 @@ import i18n from "i18next";
 import { FormEvent } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../src/store/UserSlices";
-import { AppDispatch, RootState } from "../../src/store/types";
+import type { AppDispatch, RootState } from "../../src/store";
 import { dispatchAuthSessionChanged } from "@/src/authSessionEvent";
 
 export default function LoginMember() {

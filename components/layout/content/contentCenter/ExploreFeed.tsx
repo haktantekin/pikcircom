@@ -5,21 +5,9 @@ import { getExplorePosts } from "@/configs/client-services";
 import { resolveProfileImageUrl } from "@/src/avatarUrl";
 import { pickPostImageUrl } from "@/src/postImageUrl";
 import { useTranslation } from "react-i18next";
+import type { ExplorePost } from "@/src/feedPostTypes";
 
-export interface ExplorePost {
-  id: string;
-  subject?: string;
-  userName?: string;
-  createDate?: string;
-  commentCount?: number;
-  favoriteCount?: number;
-  isFavorited?: boolean;
-  authorIsFollowing?: boolean;
-  image?: string;
-  imageUrls?: Record<string, string>;
-  profileImage?: string;
-  tags?: { slug: string; name: string; imageUrl?: string }[];
-}
+export type { ExplorePost };
 
 interface ExploreFeedProps {
   selectedTag?: string;

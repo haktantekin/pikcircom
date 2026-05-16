@@ -8,7 +8,7 @@ import {
 import { logout } from "@/configs/client-services";
 import { clearUser } from "@/src/store/UserSlices";
 import { useDispatch } from "react-redux";
-import type { AppDispatch } from "@/src/store/types";
+import type { AppDispatch } from "@/src/store";
 import { dispatchAuthSessionChanged } from "@/src/authSessionEvent";
 import {
   profileCollectionsPath,

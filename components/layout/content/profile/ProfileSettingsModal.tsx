@@ -332,6 +332,7 @@ export default function ProfileSettingsModal({
 
       showNotification({
         title: t("profileUpdateSuccessCms"),
+        message: "",
         color: "teal",
       });
       form.setFieldValue("password", "");

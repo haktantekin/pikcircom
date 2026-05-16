@@ -174,30 +174,21 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
           className="w-full justify-around border-b-0 bg-white py-2 font-bold rounded"
           style={{ boxShadow: "rgba(0, 0, 0, 0.15) 0px 5px 15px 0px" }}
         >
-          <Tabs.Tab
-            className="px-0 text-58b4d1"
-            value="piklerim"
-            component={Link}
-            href={postsHref}
-          >
-            {t("profileMyPiks")}
+          <Tabs.Tab className="px-0 text-58b4d1" value="piklerim">
+            <Link href={postsHref} className="block">
+              {t("profileMyPiks")}
+            </Link>
           </Tabs.Tab>
-          <Tabs.Tab
-            className="px-0 text-58b4d1"
-            value="piklediklerim"
-            component={Link}
-            href={likedHref}
-          >
-            {t("profileMyLikes")}
+          <Tabs.Tab className="px-0 text-58b4d1" value="piklediklerim">
+            <Link href={likedHref} className="block">
+              {t("profileMyLikes")}
+            </Link>
           </Tabs.Tab>
           {user?.isOwnProfile && (
-            <Tabs.Tab
-              className="px-0 text-58b4d1"
-              value="collection"
-              component={Link}
-              href={collectionsHref}
-            >
-              {t("profileMyCollection")}
+            <Tabs.Tab className="px-0 text-58b4d1" value="collection">
+              <Link href={collectionsHref} className="block">
+                {t("profileMyCollection")}
+              </Link>
             </Tabs.Tab>
           )}
         </Tabs.List>

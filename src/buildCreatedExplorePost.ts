@@ -1,4 +1,4 @@
-import type { ExplorePost } from "@/components/layout/content/contentCenter/ExploreFeed";
+import type { ExplorePost } from "@/src/feedPostTypes";
 import type { AuthProfileData } from "@/src/fetchAuthProfile";
 import { pickAvatarUrlFromMap } from "@/src/avatarUrl";
 import { normalizeApiPostPayload } from "@/src/postDetailHelpers";

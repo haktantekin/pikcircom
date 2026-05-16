@@ -1,6 +1,6 @@
 import { Modal, Tabs, TextInput, Loader } from "@mantine/core";
 import { IconAbc } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import ListItem from "./ListItem";
 import { createList, getLists } from "@/configs/client-services";
@@ -85,18 +85,20 @@ export default function ListsPage() {
       <Tabs
         value={period}
         onTabChange={(value) => setPeriod((value as ListPeriod) || "all")}
-        styles={{
-          tab: {
-            border: "none",
-            borderBottom: "none",
-            fontWeight: 500,
-          },
-          list: {
-            border: "none",
-            gap: 4,
-            backgroundColor: "transparent",
-          },
-        }}
+        styles={
+          {
+            tab: {
+              border: "none",
+              borderBottom: "none",
+              fontWeight: 500,
+            },
+            list: {
+              border: "none",
+              gap: 4,
+              backgroundColor: "transparent",
+            },
+          } as Record<string, CSSProperties>
+        }
       >
         <div className="mb-4 flex min-h-[52px] w-full flex-col gap-3 rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-card sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <h1 className="shrink-0 text-sm font-bold text-58b4d1 lg:text-base">

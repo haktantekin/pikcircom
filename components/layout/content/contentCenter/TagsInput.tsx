@@ -233,7 +233,6 @@ export default function TagsInput({
             value={tagData}
             onChange={updateTags}
             clearable
-            maxValues={MAX_TAGS}
           />
         )}
       </div>

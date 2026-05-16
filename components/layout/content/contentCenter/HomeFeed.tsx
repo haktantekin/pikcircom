@@ -6,7 +6,7 @@ import { resolveProfileImageUrl } from "@/src/avatarUrl";
 import { subscribePostCreated } from "@/src/postCreatedEvent";
 import { subscribeAuthSessionChanged } from "@/src/authSessionEvent";
 import { useTranslation } from "react-i18next";
-import type { ExplorePost } from "./ExploreFeed";
+import type { ExplorePost } from "@/src/feedPostTypes";
 import { pickPostImageUrl } from "@/src/postImageUrl";
 import { fetchAuthProfile } from "@/src/fetchAuthProfile";
 import Link from "next/link";

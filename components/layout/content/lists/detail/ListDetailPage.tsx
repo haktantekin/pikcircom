@@ -1,7 +1,7 @@
 import { IconArrowNarrowLeft, IconLayoutGrid, IconList } from "@tabler/icons-react";
 import { Tabs } from "@mantine/core";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { getListBySlug } from "@/configs/client-services";
 import type { ListPeriod } from "@/src/listPaths";
@@ -71,18 +71,20 @@ export default function ListDetailPage({ slug }: ListDetailPageProps) {
       <Tabs
         value={period}
         onTabChange={(value) => setPeriod((value as ListPeriod) || "all")}
-        styles={{
-          tab: {
-            border: "none",
-            borderBottom: "none",
-            fontWeight: 500,
-          },
-          list: {
-            border: "none",
-            gap: 4,
-            backgroundColor: "transparent",
-          },
-        }}
+        styles={
+          {
+            tab: {
+              border: "none",
+              borderBottom: "none",
+              fontWeight: 500,
+            },
+            list: {
+              border: "none",
+              gap: 4,
+              backgroundColor: "transparent",
+            },
+          } as Record<string, CSSProperties>
+        }
       >
         <div
           className="mb-4 grid w-full grid-cols-12 items-center gap-2 rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-card sm:px-4"

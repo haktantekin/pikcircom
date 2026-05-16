@@ -91,7 +91,6 @@ export default function Notification({ notificationAnchor = false }: Notificatio
         width={340}
         withArrow
         closeOnItemClick
-        trapFocus={false}
         withinPortal
         zIndex={400}
       >

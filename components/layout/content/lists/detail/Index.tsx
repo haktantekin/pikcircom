@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { IconArrowNarrowLeft } from "@tabler/icons-react";
 import { Tabs } from '@mantine/core';
 import ListDetailItem from "./ListDetailItem";
@@ -11,18 +12,20 @@ export default function ListDetail() {
       <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
         <Tabs
           defaultValue="today"
-          styles={{
-            tab: {
-              border: "none",
-              borderBottom: "none",
-              fontWeight: 500,
-            },
-            list: {
-              border: "none",
-              gap: 4,
-              backgroundColor: "transparent",
-            },
-          }}
+          styles={
+            {
+              tab: {
+                border: "none",
+                borderBottom: "none",
+                fontWeight: 500,
+              },
+              list: {
+                border: "none",
+                gap: 4,
+                backgroundColor: "transparent",
+              },
+            } as Record<string, CSSProperties>
+          }
         >
           <div className='relative mb-4 grid min-h-[40px] w-full grid-cols-12 items-center justify-items-center rounded-xl border border-gray-100 bg-white px-2 py-2 text-center text-sm shadow-card sm:px-3'>
             <button className="col-span-1" onClick={() => history.back()}><IconArrowNarrowLeft /></button>

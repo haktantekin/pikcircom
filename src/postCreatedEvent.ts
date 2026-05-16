@@ -1,4 +1,4 @@
-import type { ExplorePost } from "@/components/layout/content/contentCenter/ExploreFeed";
+import type { ExplorePost } from "@/src/feedPostTypes";
 
 export const POST_CREATED_EVENT = "pikcir:post-created";
 

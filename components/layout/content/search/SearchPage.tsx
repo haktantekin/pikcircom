@@ -71,7 +71,9 @@ export default function SearchPage({ feedReadOnly = false }: SearchPageProps) {
       setIsLoading(true);
       setError("");
       try {
-        const response = await search({ q, type: tab });
+        const response = await (
+          search as (opts: { q: string; type: string }) => ReturnType<typeof search>
+        )({ q, type: tab });
         if (cancelled) {
           return;
         }

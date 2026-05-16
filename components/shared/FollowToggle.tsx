@@ -54,11 +54,7 @@ export default function FollowToggle({
         }
         const data = result.data;
         const name =
-          result.ok && typeof data?.userName === "string"
-            ? data.userName
-            : typeof data?.user?.userName === "string"
-              ? data.user.userName
-              : "";
+          result.ok && typeof data?.userName === "string" ? data.userName : "";
         setViewerUserName(name.trim() || null);
         setViewerReady(true);
       })
