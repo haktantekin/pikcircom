@@ -13,6 +13,9 @@ import PostPikiToggle from "../contentCenter/post/PostPikiToggle";
 import { useTranslation } from "react-i18next";
 import { resolveProfileImageUrl } from "@/src/avatarUrl";
 import { formatRelativeTime } from "@/src/formatRelativeTime";
+import SensitivePostMedia from "@/components/SensitivePostMedia";
+import type { PostTagItem } from "@/components/layout/content/contentCenter/post/TagModal";
+import { shouldGatePost } from "@/src/sensitiveContent";
 
 
 interface PostItemProps {
@@ -47,14 +50,19 @@ interface PostItemProps {
   }[]) => void
   postLink?: string;
   readOnly?: boolean;
+  tags?: PostTagItem[];
+  categoryName?: string;
+  isSensitive?: boolean;
+  onDeleted?: () => void;
 }
 
-export default function PostItem({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, collections, onCollectionsChange, readOnly = false }: PostItemProps) {
+export default function PostItem({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, collections, onCollectionsChange, readOnly = false, tags = [], categoryName, isSensitive, onDeleted }: PostItemProps) {
   const [pikOpened, setPikOpened] = useState(false);
   const [reportOpened, setReportOpened] = useState(false);
   const [openDraw, { open, close }] = useDisclosure(false);
   const [liveCommentCount, setLiveCommentCount] = useState(commentCount);
   const [livePikCount, setLivePikCount] = useState(pikCount);
+  const [shareUnlocked, setShareUnlocked] = useState(false);
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
@@ -64,6 +72,17 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
   useEffect(() => {
     setLivePikCount(pikCount);
   }, [postId, pikCount]);
+
+  useEffect(() => {
+    setShareUnlocked(false);
+  }, [postId]);
+
+  const shareImageUrl =
+    shareUnlocked ||
+    !shouldGatePost(postId, { tags, categoryName, isSensitive })
+      ? image
+      : undefined;
+
   return (
     <>
       <div className={`bg-white rounded mt-3 border border-gray-200`}>
@@ -91,6 +110,14 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
         </div>
 
         <div className="overflow-hidden relative post-item">
+          <SensitivePostMedia
+            postId={postId}
+            tags={tags}
+            categoryName={categoryName}
+            isSensitive={isSensitive}
+            variant="feed"
+            onRevealed={() => setShareUnlocked(true)}
+          >
           <div className="overflow-hidden block">
             <div className="absolute w-full h-full z-5"></div>
             <Image
@@ -102,6 +129,7 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
               src={image}
             />
           </div>
+          </SensitivePostMedia>
         </div>
         <div className={`flex flex-col items-start p-4`}>
           {postTitle && <div className={`flex flex-col items-start text-sm text-343a40 lowercase`}>{postTitle}</div>}
@@ -150,7 +178,10 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
             <PostShare
               postLink={postLink ?? userLink}
               postTitle={postTitle}
-              imageUrl={image}
+              imageUrl={shareImageUrl}
+              postId={postId}
+              authorUserName={userName}
+              onDeleted={onDeleted}
             />
             <button type="button" className="flex items-center gap-1 text-sm text-126782" onClick={() => setReportOpened(true)}>
               <IconInfoTriangle size={20} stroke={1.0} />

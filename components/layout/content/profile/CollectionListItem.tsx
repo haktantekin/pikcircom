@@ -10,12 +10,19 @@ interface CollectionListItemProps {
   link: string,
   item: string[],
   count: number,
-  collectClick: () => void
   onUpdate?: (name: string) => Promise<void> | void
   onDelete?: () => Promise<void> | void
 }
 
-export default function CollectionListItem({ canManage = false, name, link, item, collectClick, onUpdate, onDelete }: CollectionListItemProps) {
+export default function CollectionListItem({
+  canManage = false,
+  name,
+  link,
+  item,
+  count,
+  onUpdate,
+  onDelete,
+}: CollectionListItemProps) {
   const { t } = useTranslation();
   return (
     <>
@@ -24,6 +31,7 @@ export default function CollectionListItem({ canManage = false, name, link, item
           <Link href={link}>
             <div className="font-bold text-base mb-3">
               {name}
+              <span className="ml-1.5 font-normal text-gray-500">({count})</span>
             </div>
           </Link>
           {canManage && <CollectionSettings key={name} name={name} onUpdate={onUpdate} onDelete={onDelete} />}
@@ -37,7 +45,12 @@ export default function CollectionListItem({ canManage = false, name, link, item
             ))}
           </div>
         </Link>
-          <button className="font-bold font-base text-xs text-center mt-4 text-58b4d1 mx-auto flex" onClick={collectClick}>{t("lookTheCollection")}</button>
+          <Link
+            href={link}
+            className="font-bold font-base text-xs text-center mt-4 text-58b4d1 mx-auto flex hover:underline"
+          >
+            {t("lookTheCollection")}
+          </Link>
       </div>
     </>
   )

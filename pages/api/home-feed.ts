@@ -37,6 +37,9 @@ export default async function handler(
     typeof perPageRaw === "string" && perPageRaw !== ""
       ? perPageRaw
       : undefined;
+  const pageRaw = req.query.page;
+  const page =
+    typeof pageRaw === "string" && pageRaw !== "" ? pageRaw : undefined;
 
   try {
     const result = await fetchHomeFeedFromWordPress(
@@ -44,6 +47,7 @@ export default async function handler(
       scope,
       authToken,
       perPage,
+      page,
     );
 
     setApiCacheHeaders(res, "feed");

@@ -6,7 +6,22 @@ export function getWordPressSiteRoot(): string {
   const baseUrl =
     process.env.WORDPRESS_API_URL ?? process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
 
-  return baseUrl?.replace(/\/$/, "") ?? "";
+  let root = baseUrl?.replace(/\/$/, "") ?? "";
+
+  if (
+    root.startsWith("http://") &&
+    process.env.NODE_ENV === "production" &&
+    process.env.WORDPRESS_FORCE_HTTP !== "1"
+  ) {
+    root = `https://${root.slice("http://".length)}`;
+  }
+
+  return root;
+}
+
+export function getWordPressPikcirApiRoot(siteRoot?: string): string {
+  const root = siteRoot ?? getWordPressSiteRoot();
+  return root ? `${root}/wp-json/pikcir/v1` : "";
 }
 
 export type FlatAuthMeProfilePayload = {

@@ -2,6 +2,12 @@ import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { setApiCacheHeaders } from "@/src/apiResponseCache";
+import {
+  FEED_PAGE_SIZE,
+  normalizePage,
+  normalizePageSize,
+  slicePageFromFetched,
+} from "@/src/feedPagination";
 
 const AUTH_COOKIE_NAME = "auth_token";
 
@@ -32,11 +38,9 @@ export default async function handler(
 
   const tagRaw = req.query.tag;
   const tag = typeof tagRaw === "string" ? tagRaw : undefined;
-  const perPageRaw = req.query.per_page;
-  const perPage =
-    typeof perPageRaw === "string" && perPageRaw !== ""
-      ? perPageRaw
-      : undefined;
+  const pageNum = normalizePage(req.query.page);
+  const pageSize = normalizePageSize(req.query.per_page, FEED_PAGE_SIZE);
+  const wpFetchSize = pageNum * pageSize;
 
   try {
     const { data, status } = await axios.get(
@@ -47,16 +51,27 @@ export default async function handler(
           : undefined,
         params: {
           ...(tag ? { tag } : {}),
-          ...(perPage ? { per_page: perPage } : {}),
+          per_page: String(wpFetchSize),
+          page: String(pageNum),
         },
       },
     );
 
     setApiCacheHeaders(res, "explore");
 
+    const allPosts = Array.isArray(data?.posts) ? data.posts : [];
+    const wpHasMore =
+      typeof data?.has_more === "boolean" ? data.has_more : undefined;
+    const { items, hasMore } = slicePageFromFetched(
+      allPosts,
+      pageNum,
+      pageSize,
+    );
+
     return res.status(status).json({
       tag: data.tag ?? "",
-      posts: data.posts ?? [],
+      posts: items,
+      has_more: wpHasMore ?? hasMore,
     });
   } catch (error) {
     if (axios.isAxiosError(error)) {

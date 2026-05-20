@@ -2,7 +2,10 @@ import ContentLeft from "@/components/layout/content/ContentLeft";
 import ContentRight from "@/components/layout/content/ContentRight";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
-import { profileCollectionsPath } from "@/src/profilePaths";
+import {
+  collectionSlugFromHref,
+  profileCollectionsPath,
+} from "@/src/profilePaths";
 import CollectionPostsImageGrid from "@/components/layout/content/collections/CollectionPostsImageGrid";
 import { getProfileByUserName } from "@/configs/client-services";
 import { IconArrowNarrowLeft } from "@tabler/icons-react";
@@ -11,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { enrichPostsWithTagsFromCatalog } from "@/src/sensitiveContent";
 
 interface CollectionPostProps {
   id: string;
@@ -22,18 +26,27 @@ interface CollectionPostProps {
   subject?: string;
   userName?: string;
   createDate?: string;
+  addedAt?: string;
   image?: string;
+  imageUrls?: Record<string, string>;
   profileImage?: string;
+  tags?: { slug: string; name: string; imageUrl?: string }[];
 }
 
 interface CollectionProps {
   id: string;
   name: string;
+  slug?: string;
   link?: string;
   item?: string[];
   count?: number;
   postIds?: number[];
   posts?: CollectionPostProps[];
+}
+
+interface ProfilePostCatalogEntry {
+  id: string;
+  tags?: { slug: string; name: string }[];
 }
 
 interface ProfileData {
@@ -42,6 +55,8 @@ interface ProfileData {
   firstName?: string;
   avatarUrls?: Record<string, string>;
   isOwnProfile?: boolean;
+  posts?: ProfilePostCatalogEntry[];
+  favoritePosts?: ProfilePostCatalogEntry[];
   collections?: CollectionProps[];
 }
 
@@ -79,15 +94,28 @@ export default function CollectionDetail() {
 
   const collection = useMemo(() => {
     if (!user?.collections || !collectionSlug) return null;
+    const wanted = collectionSlug.toLowerCase();
     return (
-      user.collections.find(
-        (c) =>
-          c.link?.split("/").pop() === collectionSlug ||
-          c.name.toLowerCase().replace(/\s+/g, "-") === collectionSlug.toLowerCase() ||
+      user.collections.find((c) => {
+        const fromLink = c.link
+          ? collectionSlugFromHref(c.link).toLowerCase()
+          : "";
+        const fromSlug = c.slug?.trim().toLowerCase() ?? "";
+        const fromName = c.name.trim().toLowerCase().replace(/\s+/g, "-");
+        return (
+          fromLink === wanted ||
+          fromSlug === wanted ||
+          fromName === wanted ||
           c.id === collectionSlug
-      ) ?? null
+        );
+      }) ?? null
     );
   }, [user?.collections, collectionSlug]);
+
+  const enrichedPosts = useMemo(() => {
+    const catalog = [...(user?.posts ?? []), ...(user?.favoritePosts ?? [])];
+    return enrichPostsWithTagsFromCatalog(collection?.posts ?? [], catalog);
+  }, [collection?.posts, user?.posts, user?.favoritePosts]);
 
   if (!router.isReady || loading) return null;
 
@@ -137,7 +165,7 @@ export default function CollectionDetail() {
                   {(collection.posts ?? []).length > 0 ? (
                     <div className="rounded-lg bg-white p-1 shadow-card sm:p-2">
                       <CollectionPostsImageGrid
-                        posts={collection.posts ?? []}
+                        posts={enrichedPosts}
                         fallbackUserName={user?.userName || profileSlug || ""}
                       />
                     </div>

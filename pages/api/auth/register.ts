@@ -1,7 +1,13 @@
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
+import {
+  AUTH_TOKEN_COOKIE_NAME,
+  getWordPressPikcirApiRoot,
+  getWordPressSiteRoot,
+} from "@/src/server/wp-auth-me-profile";
+import { mapWordPressProxyError } from "@/src/server/wordpressErrors";
 
-const AUTH_COOKIE_NAME = "auth_token";
+const AUTH_COOKIE_NAME = AUTH_TOKEN_COOKIE_NAME;
 
 export const config = {
   api: {
@@ -9,13 +15,6 @@ export const config = {
       sizeLimit: "10mb",
     },
   },
-};
-
-const getWordPressBaseUrl = () => {
-  const baseUrl =
-    process.env.WORDPRESS_API_URL ?? process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
-
-  return baseUrl?.replace(/\/$/, "") ?? "";
 };
 
 export default async function handler(
@@ -27,9 +26,12 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const wordPressBaseUrl = getWordPressBaseUrl();
+  const wordPressSiteRoot = getWordPressSiteRoot();
+  const registerUrl = wordPressSiteRoot
+    ? `${getWordPressPikcirApiRoot(wordPressSiteRoot)}/auth/register`
+    : "";
 
-  if (!wordPressBaseUrl) {
+  if (!registerUrl) {
     return res.status(500).json({
       message: "WORDPRESS_API_URL tanimli degil",
     });
@@ -37,7 +39,7 @@ export default async function handler(
 
   try {
     const { data, status } = await axios.post(
-      `${wordPressBaseUrl}/wp-json/pikcir/v1/auth/register`,
+      registerUrl,
       req.body,
       {
         headers: {
@@ -76,25 +78,14 @@ export default async function handler(
       avatarUrls: data.user?.avatarUrls ?? {},
     });
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const responseMessage =
-        typeof error.response?.data === "string"
-          ? error.response.data.trim()
-          : typeof error.response?.data?.message === "string"
-            ? error.response.data.message.trim()
-            : "";
-
-      const fallbackMessage = error.code === "ECONNREFUSED"
+    const fallbackMessage =
+      axios.isAxiosError(error) && error.code === "ECONNREFUSED"
         ? "WordPress baglantisi kurulamadi"
-        : error.message ?? "Kayit olusturulamadi";
-
-      return res.status(error.response?.status ?? 500).json({
-        message: responseMessage || fallbackMessage,
-      });
-    }
-
-    return res.status(500).json({
-      message: "Kayit sirasinda beklenmeyen bir hata olustu",
+        : "Kayit olusturulamadi";
+    const mapped = mapWordPressProxyError(error, fallbackMessage);
+    return res.status(mapped.status).json({
+      message: mapped.message,
+      ...(mapped.code ? { code: mapped.code } : {}),
     });
   }
 }

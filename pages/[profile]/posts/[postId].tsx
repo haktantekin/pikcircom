@@ -13,9 +13,8 @@ import {
 } from "@/src/postDetailHelpers";
 import { IconArrowNarrowLeft } from "@tabler/icons-react";
 import Head from "next/head";
-import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useGuestFeedReadOnly } from "@/src/useGuestFeedReadOnly";
 
@@ -96,6 +95,20 @@ export default function PostDetail() {
     };
   }, [profileSlug, postId, router.isReady]);
 
+  const handleGoBack = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    const slug = profileSlug?.trim();
+    if (slug) {
+      void router.push(`/${slug}`);
+      return;
+    }
+    void router.push("/");
+  }, [profileSlug, router]);
+
   if (!router.isReady || loading) return null;
 
   return (
@@ -124,15 +137,17 @@ export default function PostDetail() {
                   boxShadow: "rgba(33, 35, 38, 0.1) 0px 10px 10px -10px",
                 }}
               >
-                <Link
-                  href={`/${profileSlug}`}
-                  className="absolute left-4 top-2 flex justify-center items-center"
+                <button
+                  type="button"
+                  onClick={handleGoBack}
+                  className="absolute left-4 top-2 flex items-center justify-center gap-0.5"
+                  aria-label={t("goBack")}
                 >
                   <IconArrowNarrowLeft />
                   <span className="font-bold text-xs text-343a40">
                     {t("goBack")}
                   </span>
-                </Link>
+                </button>
                 <div className="font-bold text-sm text-126782">
                   {t("pikcirDetail")}
                 </div>
@@ -162,7 +177,18 @@ export default function PostDetail() {
                   admin={false}
                   postTitle={post.subject}
                   postLink={`/${post.userName || profileSlug || ""}/posts/${post.id}`}
+                  tags={post.tags}
+                  categoryName={post.categoryName}
+                  isSensitive={post.isSensitive}
                   readOnly={feedReadOnly}
+                  onDeleted={() => {
+                    const slug = (post.userName || profileSlug || "").trim();
+                    if (slug) {
+                      void router.push(`/${slug}`);
+                    } else {
+                      void router.push("/");
+                    }
+                  }}
                 />
               )}
             </div>

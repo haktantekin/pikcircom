@@ -17,7 +17,7 @@ export interface ListSummary {
 
 export default function ListsPage() {
   const { t } = useTranslation();
-  const [period, setPeriod] = useState<ListPeriod>("today");
+  const [period, setPeriod] = useState<ListPeriod>("all");
   const [lists, setLists] = useState<ListSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newListModal, setNewListModal] = useState(false);

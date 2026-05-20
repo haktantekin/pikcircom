@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import SensitivePostMedia from "@/components/SensitivePostMedia";
 import { listPostPath } from "@/src/listPaths";
 import { pickPostImageUrl } from "@/src/postImageUrl";
+import type { PostTagLike } from "@/src/sensitiveContent";
 
 export interface ListDetailPost {
   id: string;
@@ -9,6 +11,7 @@ export interface ListDetailPost {
   image?: string;
   imageUrls?: Record<string, string>;
   subject?: string;
+  tags?: PostTagLike[];
 }
 
 interface ListDetailGridProps {
@@ -30,19 +33,25 @@ export default function ListDetailGrid({ posts }: ListDetailGridProps) {
           "/postExample/F5Z00CEaEAAFPgi.jpg";
 
         return (
-          <Link
+          <SensitivePostMedia
             key={post.id}
-            href={href}
-            className="rounded overflow-hidden aspect-square relative block hover:opacity-90 transition-opacity border border-gray-100"
+            postId={post.id}
+            tags={post.tags}
+            variant="grid"
           >
-            <Image
-              src={image}
-              alt={post.subject || ""}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 50vw, 220px"
-            />
-          </Link>
+            <Link
+              href={href}
+              className="rounded overflow-hidden aspect-square relative block hover:opacity-90 transition-opacity border border-gray-100"
+            >
+              <Image
+                src={image}
+                alt={post.subject || ""}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 220px"
+              />
+            </Link>
+          </SensitivePostMedia>
         );
       })}
     </section>

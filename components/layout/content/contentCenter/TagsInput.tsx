@@ -21,6 +21,7 @@ interface TagsInputProps {
   isSubmitting?: boolean;
   compact?: boolean;
   hideSubmit?: boolean;
+  hideDescription?: boolean;
   lockedList?: { id: string; name: string };
 }
 
@@ -60,6 +61,7 @@ export default function TagsInput({
   isSubmitting = false,
   compact = false,
   hideSubmit = false,
+  hideDescription = false,
   lockedList,
 }: TagsInputProps) {
   const { t } = useTranslation();
@@ -185,11 +187,12 @@ export default function TagsInput({
   const canSubmit = tagData.length > 0 && !isSubmitting;
 
   const rootClass = compact
-    ? "grid grid-cols-12 w-full gap-2"
+    ? "grid grid-cols-12 w-full gap-1"
     : "grid grid-cols-12 w-full gap-2 bg-white lg:p-4 rounded";
 
   return (
     <div className={rootClass}>
+      {!hideDescription ? (
       <div className="col-span-12 post-title">
         <Textarea
           className={
@@ -214,6 +217,7 @@ export default function TagsInput({
           }
         />
       </div>
+      ) : null}
       <div className="w-full col-span-12">
         {tagsLoading ? (
           <div className="flex justify-center py-2">
@@ -225,9 +229,9 @@ export default function TagsInput({
           <MultiSelect
             data={tagOptions}
             itemComponent={TagSelectItem}
-            label={t("tags")}
+            label={compact ? undefined : t("tags")}
             placeholder={t("selectTagsPlaceholder")}
-            description={t("tagsSelectAdminOnly")}
+            description={compact ? undefined : t("tagsSelectAdminOnly")}
             searchable
             nothingFound={t("selectTagsError")}
             value={tagData}
@@ -251,7 +255,7 @@ export default function TagsInput({
         ) : (
           <MultiSelect
             data={collectionOptions}
-            label={t("selectCollectionsLabel")}
+            label={compact ? undefined : t("selectCollectionsLabel")}
             placeholder={t("selectCollectionsPlaceholder")}
             searchable
             nothingFound={t("selectTagsError")}
@@ -285,7 +289,7 @@ export default function TagsInput({
         ) : (
           <MultiSelect
             data={listOptions}
-            label={t("selectListsLabel")}
+            label={compact ? undefined : t("selectListsLabel")}
             placeholder={t("selectListsPlaceholder")}
             searchable
             nothingFound={t("selectTagsError")}

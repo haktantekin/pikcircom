@@ -1,6 +1,6 @@
 import { Tabs } from "@mantine/core";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { search } from "@/configs/client-services";
 import Search from "@/components/main/Search";
@@ -39,6 +39,14 @@ export default function SearchPage({ feedReadOnly = false }: SearchPageProps) {
   const [results, setResults] = useState<SearchResponse>(EMPTY_RESULTS);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const handlePostDeleted = useCallback((postId: string) => {
+    setResults((prev) => ({
+      ...prev,
+      posts: prev.posts.filter((p) => p.id !== postId),
+      hashtagPosts: prev.hashtagPosts.filter((p) => p.id !== postId),
+    }));
+  }, []);
 
   useEffect(() => {
     if (!router.isReady) {
@@ -197,13 +205,18 @@ export default function SearchPage({ feedReadOnly = false }: SearchPageProps) {
         ) : !showHint && trimmedQuery.length >= 2 ? (
           <>
             {activeTab === "posts" ? (
-              <SearchPostResults posts={results.posts} readOnly={feedReadOnly} />
+              <SearchPostResults
+                posts={results.posts}
+                readOnly={feedReadOnly}
+                onPostDeleted={handlePostDeleted}
+              />
             ) : null}
             {activeTab === "hashtags" ? (
               <SearchHashtagResults
                 hashtags={results.hashtags}
                 posts={results.hashtagPosts}
                 readOnly={feedReadOnly}
+                onPostDeleted={handlePostDeleted}
               />
             ) : null}
             {activeTab === "users" ? <SearchUserResults users={results.users} /> : null}

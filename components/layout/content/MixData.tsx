@@ -55,6 +55,9 @@ export default function MixData() {
               postTitle={x.subject}
               profile={false}
               collectionItem={false}
+              onDeleted={() =>
+                setEntryListing((prev) => prev.filter((e) => e.id !== x.id))
+              }
             />
           </>
         )

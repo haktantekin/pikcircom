@@ -9,12 +9,49 @@ import { listIndexPath } from "@/src/listPaths";
 import ListDetailGrid, { type ListDetailPost } from "./ListDetailGrid";
 import ListDetailTimeline from "./ListDetailTimeline";
 import Skeleton from "@/components/Skeleton";
+import FeedLoadMoreSentinel from "@/components/FeedLoadMoreSentinel";
 import PostComposer from "@/components/layout/content/contentCenter/PostComposer";
+import { FEED_GRID_PAGE_SIZE, FEED_PAGE_SIZE } from "@/src/feedPagination";
+import { useClientPaginatedSlice } from "@/src/useClientPaginatedSlice";
 
 type ViewMode = "grid" | "timeline";
 
 interface ListDetailPageProps {
   slug: string;
+}
+
+function ListDetailPostsView({
+  posts,
+  viewMode,
+  resetKey,
+}: {
+  posts: ListDetailPost[];
+  viewMode: ViewMode;
+  resetKey: string;
+}) {
+  const pageSize =
+    viewMode === "grid" ? FEED_GRID_PAGE_SIZE : FEED_PAGE_SIZE;
+  const { visibleItems, hasMore, isLoadingMore, sentinelRef } =
+    useClientPaginatedSlice({
+      items: posts,
+      pageSize,
+      resetKey,
+    });
+
+  return (
+    <>
+      {viewMode === "grid" ? (
+        <ListDetailGrid posts={visibleItems} />
+      ) : (
+        <ListDetailTimeline posts={visibleItems} />
+      )}
+      <FeedLoadMoreSentinel
+        sentinelRef={sentinelRef}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+      />
+    </>
+  );
 }
 
 export default function ListDetailPage({ slug }: ListDetailPageProps) {
@@ -157,10 +194,12 @@ export default function ListDetailPage({ slug }: ListDetailPageProps) {
               <p className="text-sm text-center text-gray-500 py-8">{t("listNotFound")}</p>
             ) : posts.length === 0 ? (
               <p className="text-sm text-center text-gray-500 py-8">{t("listEmpty")}</p>
-            ) : viewMode === "grid" ? (
-              <ListDetailGrid posts={posts} />
             ) : (
-              <ListDetailTimeline posts={posts} />
+              <ListDetailPostsView
+                posts={posts}
+                viewMode={viewMode}
+                resetKey={`${slug}-${tab}-${period}-${refreshKey}-${viewMode}`}
+              />
             )}
           </Tabs.Panel>
         ))}

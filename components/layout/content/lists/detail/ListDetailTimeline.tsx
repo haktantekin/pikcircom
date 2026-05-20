@@ -24,6 +24,7 @@ export default function ListDetailTimeline({ posts }: ListDetailTimelineProps) {
         return (
           <ListDetailItem
             key={post.id}
+            postId={post.id}
             link={href}
             image={
               pickPostImageUrl(post.image, post.imageUrls, "thumb") ||
@@ -32,6 +33,7 @@ export default function ListDetailTimeline({ posts }: ListDetailTimelineProps) {
             user={author ? `@${author}` : ""}
             time={time}
             title={post.subject}
+            tags={post.tags}
           />
         );
       })}

@@ -8,9 +8,12 @@ import {
   IconLink,
   IconBrandPinterest,
   IconDownload,
+  IconTrash,
 } from "@tabler/icons-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { deletePost } from "@/configs/client-services";
+import { isSameUserName, useCurrentUserName } from "@/src/useCurrentUserName";
 import {
   buildFacebookShareUrl,
   buildPinterestShareUrl,
@@ -24,6 +27,9 @@ export type PostShareProps = {
   postLink: string;
   postTitle?: string;
   imageUrl?: string;
+  postId?: string;
+  authorUserName?: string;
+  onDeleted?: () => void;
 };
 
 function openShareWindow(url: string) {
@@ -37,12 +43,21 @@ export default function PostShare({
   postLink,
   postTitle,
   imageUrl,
+  postId,
+  authorUserName,
+  onDeleted,
 }: PostShareProps) {
   const { t } = useTranslation();
+  const { userName: viewerUserName } = useCurrentUserName();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const shareUrl = useMemo(() => buildPostShareUrl(postLink), [postLink]);
   const absoluteImageUrl = useMemo(() => resolveShareImageUrl(imageUrl), [imageUrl]);
   const hasShareTarget = shareUrl.length > 0 && postLink !== "#";
+  const canDelete =
+    Boolean(postId) &&
+    isSameUserName(viewerUserName, authorUserName) &&
+    !isDeleting;
 
   const handleCopyLink = useCallback(async () => {
     if (!hasShareTarget) {
@@ -81,6 +96,24 @@ export default function PostShare({
       window.open(absoluteImageUrl, "_blank", "noopener,noreferrer");
     }
   }, [absoluteImageUrl]);
+
+  const handleDeletePost = useCallback(async () => {
+    if (!postId || !canDelete) {
+      return;
+    }
+    if (!window.confirm(t("postDeleteConfirm"))) {
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      await deletePost(postId);
+      onDeleted?.();
+    } catch {
+      alert(t("postDeleteError"));
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [canDelete, onDeleted, postId, t]);
 
   return (
     <Menu shadow="md" width={220} withinPortal position="bottom-end">
@@ -140,6 +173,18 @@ export default function PostShare({
         >
           Pinterest
         </Menu.Item>
+        {canDelete ? (
+          <>
+            <Menu.Divider />
+            <Menu.Item
+              color="red"
+              icon={<IconTrash size={18} />}
+              onClick={() => void handleDeletePost()}
+            >
+              {t("deleteFull")}
+            </Menu.Item>
+          </>
+        ) : null}
       </Menu.Dropdown>
     </Menu>
   );

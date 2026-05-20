@@ -1,24 +1,11 @@
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
-
-const AUTH_COOKIE_NAME = "auth_token";
-
-const getWordPressBaseUrl = () => {
-  const baseUrl =
-    process.env.WORDPRESS_API_URL ?? process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
-
-  return baseUrl?.replace(/\/$/, "") ?? "";
-};
-
-const getWordPressJwtUrl = () => {
-  const baseUrl = getWordPressBaseUrl();
-
-  if (!baseUrl) {
-    return "";
-  }
-
-  return `${baseUrl}/wp-json/pikcir/v1/auth/login`;
-};
+import {
+  AUTH_TOKEN_COOKIE_NAME,
+  getWordPressPikcirApiRoot,
+  getWordPressSiteRoot,
+} from "@/src/server/wp-auth-me-profile";
+import { mapWordPressProxyError } from "@/src/server/wordpressErrors";
 
 export default async function handler(
   req: NextApiRequest,
@@ -29,9 +16,12 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const wordPressJwtUrl = getWordPressJwtUrl();
+  const wordPressSiteRoot = getWordPressSiteRoot();
+  const wordPressLoginUrl = wordPressSiteRoot
+    ? `${getWordPressPikcirApiRoot(wordPressSiteRoot)}/auth/login`
+    : "";
 
-  if (!wordPressJwtUrl) {
+  if (!wordPressLoginUrl) {
     return res.status(500).json({
       message: "WORDPRESS_API_URL tanimli degil",
     });
@@ -46,7 +36,7 @@ export default async function handler(
   }
 
   try {
-    const { data } = await axios.post(wordPressJwtUrl, {
+    const { data } = await axios.post(wordPressLoginUrl, {
       username: userName,
       password,
     });
@@ -55,8 +45,8 @@ export default async function handler(
     const maxAge = Number(data.expires_in ?? 3600);
 
     res.setHeader("Set-Cookie", [
-      `${AUTH_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT${secure}`,
-      `${AUTH_COOKIE_NAME}=${encodeURIComponent(data.access_token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`,
+      `${AUTH_TOKEN_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT${secure}`,
+      `${AUTH_TOKEN_COOKIE_NAME}=${encodeURIComponent(data.access_token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`,
     ]);
 
     return res.status(200).json({
@@ -73,16 +63,13 @@ export default async function handler(
       avatarUrls: data.user?.avatarUrls ?? {},
     });
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const statusCode = error.response?.status ?? 500;
-      const message =
-        error.response?.data?.message ?? "Kullanici adi ya da sifre eslesmedi";
-
-      return res.status(statusCode).json({ message });
-    }
-
-    return res.status(500).json({
-      message: "WordPress login sirasinda beklenmeyen bir hata olustu",
+    const mapped = mapWordPressProxyError(
+      error,
+      "Kullanici adi ya da sifre eslesmedi",
+    );
+    return res.status(mapped.status).json({
+      message: mapped.message,
+      ...(mapped.code ? { code: mapped.code } : {}),
     });
   }
 }

@@ -7,9 +7,14 @@ import { useTranslation } from "react-i18next";
 interface SearchPostResultsProps {
   posts: SearchPostItem[];
   readOnly?: boolean;
+  onPostDeleted?: (postId: string) => void;
 }
 
-export default function SearchPostResults({ posts, readOnly = false }: SearchPostResultsProps) {
+export default function SearchPostResults({
+  posts,
+  readOnly = false,
+  onPostDeleted,
+}: SearchPostResultsProps) {
   const { t } = useTranslation();
 
   if (posts.length === 0) {
@@ -47,6 +52,9 @@ export default function SearchPostResults({ posts, readOnly = false }: SearchPos
             profile={false}
             collectionItem={false}
             readOnly={readOnly}
+            onDeleted={
+              onPostDeleted ? () => onPostDeleted(post.id) : undefined
+            }
           />
         );
       })}

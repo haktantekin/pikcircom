@@ -84,19 +84,21 @@ export const createPost = ({ params }) =>
 export const getTags = () =>
   client.get(`/api/tags`);
 
-export const getExplorePosts = ({ tag, perPage } = {}) =>
+export const getExplorePosts = ({ tag, perPage, page } = {}) =>
   client.get(`/api/explore`, {
     params: {
       ...(tag ? { tag } : {}),
       ...(perPage ? { per_page: perPage } : {}),
+      ...(page ? { page } : {}),
     },
   });
 
-export const getHomeFeed = ({ scope = "karma", perPage, refresh = false } = {}) =>
+export const getHomeFeed = ({ scope = "karma", perPage, page, refresh = false } = {}) =>
   client.get(`/api/home-feed`, {
     params: {
       scope,
       ...(perPage ? { per_page: perPage } : {}),
+      ...(page ? { page } : {}),
     },
     pikcirRefresh: refresh,
   });
@@ -119,6 +121,9 @@ export const addPostToList = (listId, postId) =>
 
 export const getPostById = (postId) =>
   client.get(`/api/posts/${encodeURIComponent(postId)}`);
+
+export const deletePost = (postId) =>
+  client.delete(`/api/posts/${encodeURIComponent(postId)}`);
 
 export const favoritePost = (postId) =>
   client.post(`/api/posts/${encodeURIComponent(postId)}/favorite`);

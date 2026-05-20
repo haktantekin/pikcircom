@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { FileButton } from "@mantine/core";
+import PostComposerInline from "./PostComposerInline";
 import TagsInput from "./TagsInput";
 import { useTranslation } from "react-i18next";
 import { IconPhoto, IconX } from "@tabler/icons-react";
@@ -45,6 +46,15 @@ export default function PostComposer({
     () => (file ? URL.createObjectURL(file) : null),
     [file],
   );
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   const { t } = useTranslation();
 
   const isInline = variant === "inline";
@@ -200,98 +210,29 @@ export default function PostComposer({
 
   if (isInline) {
     return (
-      <section
-        className={`mb-4 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-card ${showOnMobile ? "block" : "hidden lg:block"}`}
-        style={{ boxShadow: "rgba(33, 35, 38, 0.06) 0px 4px 12px -4px" }}
-      >
-        <div className="flex gap-3 p-3 sm:p-4">
-          <div className="shrink-0 pt-0.5">
-            <Image
-              src={avatarUrl}
-              alt=""
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-full border border-gray-100 object-cover"
-              unoptimized
-            />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            {!file ? (
-              renderFileButton(
-                <span className="block w-full py-2.5 text-left text-base leading-snug text-gray-500 transition-colors hover:text-58b4d1">
-                  {t("composePlaceholder")}
-                </span>,
-                "w-full",
-              )
-            ) : (
-              <div className="space-y-3">
-                <TagsInput
-                  description={description}
-                  onDescriptionChange={setDescription}
-                  tags={tags}
-                  onTagsChange={setTags}
-                  collectionIds={collectionIds}
-                  onCollectionIdsChange={setCollectionIds}
-                  listIds={listIds}
-                  onListIdsChange={setListIds}
-                  onSubmit={handleSubmit}
-                  isSubmitting={isSubmitting}
-                  compact
-                  hideSubmit
-                  lockedList={fixedList}
-                />
-
-                <div className="relative overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
-                  <button
-                    type="button"
-                    onClick={clearFile}
-                    className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
-                    aria-label={t("hide")}
-                  >
-                    <IconX size={16} stroke={2} />
-                  </button>
-                  <Image
-                    src={previewUrl || "/profile.jpg"}
-                    alt=""
-                    width={600}
-                    height={400}
-                    className="max-h-[280px] w-full object-cover"
-                    unoptimized
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between border-t border-gray-100 px-3 py-2 sm:px-4">
-          <div className="flex items-center gap-1">
-            {renderFileButton(
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full text-58b4d1 transition-colors hover:bg-58b4d1/10">
-                <IconPhoto size={22} stroke={1.5} />
-              </span>,
-            )}
-          </div>
-
-          {file && (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!canShare}
-              className={`rounded-full px-5 py-1.5 text-sm font-bold text-white transition-colors ${
-                canShare
-                  ? "bg-58b4d1 hover:bg-[#4aa3c4]"
-                  : "pointer-events-none bg-gray-300"
-              }`}
-            >
-              {isSubmitting ? "..." : t("share")}
-            </button>
-          )}
-        </div>
-      </section>
+      <PostComposerInline
+        showOnMobile={showOnMobile}
+        avatarUrl={avatarUrl}
+        previewUrl={previewUrl}
+        file={file}
+        description={description}
+        tags={tags}
+        collectionIds={collectionIds}
+        listIds={listIds}
+        isSubmitting={isSubmitting}
+        canShare={canShare}
+        fixedList={fixedList}
+        onDescriptionChange={setDescription}
+        onTagsChange={setTags}
+        onCollectionIdsChange={setCollectionIds}
+        onListIdsChange={setListIds}
+        onFileSelect={setFile}
+        onClearFile={clearFile}
+        onSubmit={handleSubmit}
+      />
     );
   }
+
 
   return (
     <div className="flex w-full max-w-full flex-col items-center">

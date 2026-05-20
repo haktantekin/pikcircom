@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PostList from "./post/PostList";
 import Skeleton from "@/components/Skeleton";
-import { getHomeFeed } from "@/configs/client-services";
+import FeedLoadMoreSentinel from "@/components/FeedLoadMoreSentinel";
+import { fetchHomeFeedPage } from "@/src/feedApi";
 import { resolveProfileImageUrl } from "@/src/avatarUrl";
 import { subscribePostCreated } from "@/src/postCreatedEvent";
 import { subscribeAuthSessionChanged } from "@/src/authSessionEvent";
 import { useTranslation } from "react-i18next";
-import type { ExplorePost } from "@/src/feedPostTypes";
+import { prepareExplorePosts, type ExplorePost } from "@/src/feedPostTypes";
 import { pickPostImageUrl } from "@/src/postImageUrl";
 import { fetchAuthProfile } from "@/src/fetchAuthProfile";
+import { FEED_PAGE_SIZE } from "@/src/feedPagination";
+import { useClientPaginatedSlice } from "@/src/useClientPaginatedSlice";
+import { useInfiniteScroll } from "@/src/useInfiniteScroll";
 import Link from "next/link";
 
 export type HomeFeedScope = "karma" | "followed";
@@ -19,23 +23,48 @@ function postIdKey(post: ExplorePost): string {
   return post?.id != null ? String(post.id).trim() : "";
 }
 
-function sliceNewPostsFromFresh(
-  freshRaw: ExplorePost[],
-  current: ExplorePost[],
-): ExplorePost[] {
+function postFallbackKey(post: ExplorePost): string {
+  const id = postIdKey(post);
+  if (id) {
+    return `id:${id}`;
+  }
+  return `${post.userName ?? ""}|${post.createDate ?? ""}|${post.subject ?? ""}|${post.image ?? ""}`;
+}
+
+function dedupePostsArray(rawPosts: ExplorePost[]): ExplorePost[] {
   const seen = new Set<string>();
-  const fresh = freshRaw.filter((post) => {
-    const id = postIdKey(post);
-    const key =
-      id ||
-      `${post.userName ?? ""}|${post.createDate ?? ""}|${post.subject ?? ""}|${post.image ?? ""}`;
+  const deduped = rawPosts.filter((post) => {
+    const key = postFallbackKey(post);
     if (seen.has(key)) {
       return false;
     }
     seen.add(key);
     return true;
   });
+  return prepareExplorePosts(deduped);
+}
 
+function appendUniquePosts(
+  prev: ExplorePost[],
+  batch: ExplorePost[],
+): ExplorePost[] {
+  const seen = new Set(prev.map((p) => postFallbackKey(p)));
+  const next = [...prev];
+  for (const post of batch) {
+    const key = postFallbackKey(post);
+    if (!seen.has(key)) {
+      seen.add(key);
+      next.push(post);
+    }
+  }
+  return next;
+}
+
+function sliceNewPostsFromFresh(
+  freshRaw: ExplorePost[],
+  current: ExplorePost[],
+): ExplorePost[] {
+  const fresh = dedupePostsArray(freshRaw);
   const existingIds = new Set(
     current.map((p) => postIdKey(p)).filter(Boolean),
   );
@@ -59,28 +88,7 @@ function mergePostsAtTop(
   newer: ExplorePost[],
   current: ExplorePost[],
 ): ExplorePost[] {
-  const seen = new Set<string>();
-  const merged: ExplorePost[] = [];
-
-  const pushUnique = (post: ExplorePost) => {
-    const id = postIdKey(post);
-    const key =
-      id ||
-      `${post.userName ?? ""}|${post.createDate ?? ""}|${post.subject ?? ""}|${post.image ?? ""}`;
-    if (seen.has(key)) {
-      return;
-    }
-    seen.add(key);
-    merged.push(post);
-  };
-
-  for (const post of newer) {
-    pushUnique(post);
-  }
-  for (const post of current) {
-    pushUnique(post);
-  }
-  return merged;
+  return dedupePostsArray([...newer, ...current]);
 }
 
 interface NewPiksFloatingBarProps {
@@ -117,14 +125,59 @@ interface HomeFeedProps {
   scope: HomeFeedScope;
   refreshKey?: number;
   readOnly?: boolean;
-  /** API'den en fazla bu kadar gönderi (misafir ana sayfada 10) */
-  perPage?: number;
 }
 
-export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perPage }: HomeFeedProps) {
+function renderPostCard(
+  post: ExplorePost,
+  scope: HomeFeedScope,
+  readOnly: boolean,
+  onPostDeleted: (postId: string) => void,
+) {
+  const author = post.userName?.trim() || "";
+  return (
+    <PostList
+      key={post.id}
+      postId={post.id}
+      userName={author}
+      userLink={author ? `/${author}` : "#"}
+      postLink={author ? `/${author}/posts/${post.id}` : "#"}
+      profileImage={resolveProfileImageUrl(post.profileImage)}
+      time={post.createDate || ""}
+      image={
+        pickPostImageUrl(post.image, post.imageUrls, "feed") ||
+        "/postExample/F5Z00CEaEAAFPgi.jpg"
+      }
+      commentCount={post.commentCount ?? 0}
+      pikCount={post.favoriteCount ?? 0}
+      isFavorited={post.isFavorited}
+      admin={false}
+      postTitle={post.subject}
+      tags={post.tags}
+      categoryName={post.categoryName}
+      isSensitive={post.isSensitive}
+      authorIsFollowing={
+        scope === "followed" || post.authorIsFollowing === true
+      }
+      profile={false}
+      collectionItem={false}
+      readOnly={readOnly}
+      onDeleted={() => onPostDeleted(post.id)}
+    />
+  );
+}
+
+export default function HomeFeed({
+  scope,
+  refreshKey = 0,
+  readOnly = false,
+}: HomeFeedProps) {
   const { t } = useTranslation();
+  const isServerPaginated = scope === "karma";
   const [posts, setPosts] = useState<ExplorePost[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [authTick, setAuthTick] = useState(0);
   const [isGuest, setIsGuest] = useState(false);
@@ -133,6 +186,19 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
   const postsRef = useRef<ExplorePost[]>([]);
   const pendingNewPostsRef = useRef<ExplorePost[]>([]);
   postsRef.current = posts;
+
+  const listResetKey = `${scope}-${refreshKey}-${authTick}`;
+
+  const {
+    visibleItems: followedVisiblePosts,
+    hasMore: followedHasMore,
+    isLoadingMore: followedLoadingMore,
+    sentinelRef: followedSentinelRef,
+  } = useClientPaginatedSlice({
+    items: posts,
+    resetKey: listResetKey,
+    pageSize: FEED_PAGE_SIZE,
+  });
 
   const enqueuePendingPosts = useCallback((incoming: ExplorePost[]) => {
     if (incoming.length === 0) {
@@ -168,6 +234,8 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
     () =>
       subscribeAuthSessionChanged(() => {
         setPosts([]);
+        setPage(1);
+        setHasMore(false);
         setAuthTick((n) => n + 1);
       }),
     [],
@@ -176,7 +244,25 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
   useEffect(() => {
     setPendingNewCount(0);
     pendingNewPostsRef.current = [];
-  }, [scope, refreshKey, authTick]);
+  }, [listResetKey]);
+
+  const fetchKarmaPage = useCallback(
+    async (pageNum: number, refresh = false) => {
+      const response = await fetchHomeFeedPage({
+        scope: "karma",
+        perPage: FEED_PAGE_SIZE,
+        page: pageNum,
+        refresh,
+      });
+      const batch = dedupePostsArray(response.data.posts ?? []);
+      const more =
+        response.data.has_more === true ||
+        (response.data.has_more !== false &&
+          batch.length >= FEED_PAGE_SIZE);
+      return { batch, more };
+    },
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -184,6 +270,8 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
     const load = async () => {
       setIsLoading(true);
       setError("");
+      setPage(1);
+      setHasMore(false);
 
       if (scope === "followed") {
         try {
@@ -201,29 +289,20 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
       }
 
       try {
-        const response = await getHomeFeed({
-          scope,
-          ...(perPage != null ? { perPage } : {}),
-        });
-        if (cancelled) {
-          return;
-        }
-        const rawPosts = response.data.posts ?? [];
-        const seen = new Set<string>();
-        const uniquePosts = rawPosts.filter((post: ExplorePost) => {
-          const id = post?.id != null ? String(post.id).trim() : "";
-          const key =
-            id ||
-            `${post.userName ?? ""}|${post.createDate ?? ""}|${post.subject ?? ""}|${post.image ?? ""}`;
-          if (seen.has(key)) {
-            return false;
+        if (isServerPaginated) {
+          const { batch, more } = await fetchKarmaPage(1);
+          if (cancelled) {
+            return;
           }
-          seen.add(key);
-          return true;
-        });
-        setPosts(
-          perPage != null ? uniquePosts.slice(0, perPage) : uniquePosts,
-        );
+          setPosts(batch);
+          setHasMore(more);
+        } else {
+          const response = await fetchHomeFeedPage({ scope: "followed" });
+          if (cancelled) {
+            return;
+          }
+          setPosts(dedupePostsArray(response.data.posts ?? []));
+        }
         setPendingNewCount(0);
         pendingNewPostsRef.current = [];
       } catch {
@@ -243,7 +322,36 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
     return () => {
       cancelled = true;
     };
-  }, [scope, refreshKey, authTick, t, perPage]);
+  }, [scope, listResetKey, t, isServerPaginated, fetchKarmaPage]);
+
+  const loadMoreKarma = useCallback(async () => {
+    if (!hasMore || isLoadingMore || isLoading) {
+      return;
+    }
+    setIsLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const { batch, more } = await fetchKarmaPage(nextPage);
+      if (batch.length > 0) {
+        setPosts((prev) => appendUniquePosts(prev, batch));
+        setPage(nextPage);
+      }
+      setHasMore(more && batch.length > 0);
+    } catch {
+      /* sonraki scroll'da tekrar dene */
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [hasMore, isLoadingMore, isLoading, page, fetchKarmaPage]);
+
+  const { sentinelRef: karmaSentinelRef } = useInfiniteScroll({
+    onLoadMore: () => {
+      void loadMoreKarma();
+    },
+    hasMore: isServerPaginated && hasMore,
+    isLoadingMore,
+    disabled: isLoading || Boolean(error),
+  });
 
   useEffect(() => {
     if (isLoading || error) {
@@ -260,45 +368,34 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
         return;
       }
       try {
-        const response = await getHomeFeed({
-          scope,
-          ...(perPage != null ? { perPage } : {}),
-          refresh: true,
-        });
+        let fresh: ExplorePost[] = [];
+        if (isServerPaginated) {
+          const { batch } = await fetchKarmaPage(1, true);
+          fresh = batch;
+        } else {
+          const response = await fetchHomeFeedPage({
+            scope: "followed",
+            refresh: true,
+          });
+          fresh = dedupePostsArray(response.data.posts ?? []);
+        }
         if (cancelled) {
           return;
         }
-        const rawPosts = response.data.posts ?? [];
-        const seen = new Set<string>();
-        const fresh = rawPosts.filter((post: ExplorePost) => {
-          const id = post?.id != null ? String(post.id).trim() : "";
-          const key =
-            id ||
-            `${post.userName ?? ""}|${post.createDate ?? ""}|${post.subject ?? ""}|${post.image ?? ""}`;
-          if (seen.has(key)) {
-            return false;
-          }
-          seen.add(key);
-          return true;
-        });
-        const sliced =
-          perPage != null ? fresh.slice(0, perPage) : fresh;
         const baseline = mergePostsAtTop(
           pendingNewPostsRef.current,
           postsRef.current,
         );
-        const nextNew = sliceNewPostsFromFresh(sliced, baseline);
-        if (cancelled) {
+        const nextNew = sliceNewPostsFromFresh(fresh, baseline);
+        if (cancelled || nextNew.length === 0) {
           return;
         }
-        if (nextNew.length > 0) {
-          const merged = mergePostsAtTop(
-            nextNew,
-            pendingNewPostsRef.current,
-          );
-          pendingNewPostsRef.current = merged;
-          setPendingNewCount(merged.length);
-        }
+        const merged = mergePostsAtTop(
+          nextNew,
+          pendingNewPostsRef.current,
+        );
+        pendingNewPostsRef.current = merged;
+        setPendingNewCount(merged.length);
       } catch {
         /* ignore; next interval retries */
       }
@@ -309,7 +406,14 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
       cancelled = true;
       clearInterval(interval);
     };
-  }, [isLoading, error, scope, isGuest, perPage]);
+  }, [isLoading, error, scope, isGuest, isServerPaginated, fetchKarmaPage]);
+
+  const handlePostDeleted = useCallback((deletedId: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== deletedId));
+    pendingNewPostsRef.current = pendingNewPostsRef.current.filter(
+      (p) => p.id !== deletedId,
+    );
+  }, []);
 
   const applyPendingNewPiks = useCallback(() => {
     const incoming = pendingNewPostsRef.current;
@@ -317,11 +421,7 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
       setPendingNewCount(0);
       return;
     }
-    setPosts((prev) => {
-      const capped =
-        perPage != null ? mergePostsAtTop(incoming, prev).slice(0, perPage) : mergePostsAtTop(incoming, prev);
-      return capped;
-    });
+    setPosts((prev) => mergePostsAtTop(incoming, prev));
     pendingNewPostsRef.current = [];
     setPendingNewCount(0);
     if (typeof window !== "undefined") {
@@ -329,7 +429,18 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
     }
-  }, [perPage]);
+  }, []);
+
+  const displayPosts = isServerPaginated ? posts : followedVisiblePosts;
+  const showSentinel = isServerPaginated
+    ? hasMore
+    : followedHasMore;
+  const sentinelRef = isServerPaginated
+    ? karmaSentinelRef
+    : followedSentinelRef;
+  const loadingMore = isServerPaginated
+    ? isLoadingMore
+    : followedLoadingMore;
 
   if (isLoading) {
     return (
@@ -382,36 +493,14 @@ export default function HomeFeed({ scope, refreshKey = 0, readOnly = false, perP
         labelOver={t("feedNewPiksBarOver")}
         labelCount={t("feedNewPiksBar", { count: pendingNewCount })}
       />
-      {posts.map((post) => {
-        const author = post.userName?.trim() || "";
-        return (
-          <PostList
-            key={post.id}
-            postId={post.id}
-            userName={author}
-            userLink={author ? `/${author}` : "#"}
-            postLink={author ? `/${author}/posts/${post.id}` : "#"}
-            profileImage={resolveProfileImageUrl(post.profileImage)}
-            time={post.createDate || ""}
-            image={
-              pickPostImageUrl(post.image, post.imageUrls, "feed") ||
-              "/postExample/F5Z00CEaEAAFPgi.jpg"
-            }
-            commentCount={post.commentCount ?? 0}
-            pikCount={post.favoriteCount ?? 0}
-            isFavorited={post.isFavorited}
-            admin={false}
-            postTitle={post.subject}
-            tags={post.tags}
-            authorIsFollowing={
-              scope === "followed" || post.authorIsFollowing === true
-            }
-            profile={false}
-            collectionItem={false}
-            readOnly={readOnly}
-          />
-        );
-      })}
+      {displayPosts.map((post) =>
+        renderPostCard(post, scope, readOnly, handlePostDeleted),
+      )}
+      <FeedLoadMoreSentinel
+        sentinelRef={sentinelRef}
+        hasMore={showSentinel}
+        isLoadingMore={loadingMore}
+      />
     </>
   );
 }

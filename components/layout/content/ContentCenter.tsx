@@ -42,7 +42,6 @@ export default function ContentCenter({ type, feedReadOnly = false }: ContentCen
                 scope="karma"
                 refreshKey={authRefreshKey}
                 readOnly
-                perPage={10}
               />
             ) : (
               <>

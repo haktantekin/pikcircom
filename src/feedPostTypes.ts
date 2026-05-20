@@ -1,3 +1,5 @@
+import { applySensitiveMetadataToPosts } from "@/src/sensitiveContent";
+
 export interface ExplorePost {
   id: string;
   subject?: string;
@@ -11,4 +13,12 @@ export interface ExplorePost {
   imageUrls?: Record<string, string>;
   profileImage?: string;
   tags?: { slug: string; name: string; imageUrl?: string }[];
+  categoryName?: string;
+  /** wp-theme list endpoint */
+  isSensitive?: boolean;
+}
+
+/** Feed batch: hassas postId kaydı + aynı dizi */
+export function prepareExplorePosts(posts: ExplorePost[]): ExplorePost[] {
+  return applySensitiveMetadataToPosts(posts);
 }

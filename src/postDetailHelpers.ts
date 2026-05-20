@@ -1,3 +1,11 @@
+import { ingestPostSensitivity } from "@/src/sensitiveContent";
+
+export interface PostDetailTag {
+  slug: string;
+  name: string;
+  imageUrl?: string;
+}
+
 export interface PostDetailShape {
   id: string;
   subject?: string;
@@ -9,6 +17,35 @@ export interface PostDetailShape {
   commentCount?: number;
   favoriteCount?: number;
   isFavorited?: boolean;
+  tags?: PostDetailTag[];
+  categoryName?: string;
+  isSensitive?: boolean;
+}
+
+function normalizeTags(raw: unknown): PostDetailTag[] | undefined {
+  if (!Array.isArray(raw)) {
+    return undefined;
+  }
+  const tags: PostDetailTag[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") {
+      continue;
+    }
+    const tag = item as Record<string, unknown>;
+    const slug = typeof tag.slug === "string" ? tag.slug.trim() : "";
+    const name = typeof tag.name === "string" ? tag.name.trim() : "";
+    if (!slug && !name) {
+      continue;
+    }
+    tags.push({
+      slug: slug || name,
+      name: name || slug,
+      ...(typeof tag.imageUrl === "string"
+        ? { imageUrl: tag.imageUrl }
+        : {}),
+    });
+  }
+  return tags.length > 0 ? tags : undefined;
 }
 
 export function normalizeApiPostPayload(data: unknown): PostDetailShape | null {
@@ -21,7 +58,18 @@ export function normalizeApiPostPayload(data: unknown): PostDetailShape | null {
   const id =
     raw.id !== undefined && raw.id !== null ? String(raw.id) : "";
   if (!id) return null;
-  return {
+
+  const categoryName =
+    typeof raw.categoryName === "string"
+      ? raw.categoryName
+      : undefined;
+  const isSensitive =
+    raw.isSensitive === true || raw.is_sensitive === true
+      ? true
+      : undefined;
+  const tags = normalizeTags(raw.tags);
+
+  const shape: PostDetailShape = {
     id,
     subject:
       typeof raw.subject === "string"
@@ -49,7 +97,18 @@ export function normalizeApiPostPayload(data: unknown): PostDetailShape | null {
       typeof raw.favoriteCount === "number" ? raw.favoriteCount : undefined,
     isFavorited:
       typeof raw.isFavorited === "boolean" ? raw.isFavorited : undefined,
+    tags,
+    categoryName,
+    isSensitive,
   };
+
+  ingestPostSensitivity(id, {
+    tags,
+    categoryName,
+    isSensitive,
+  });
+
+  return shape;
 }
 
 interface ProfilePostsPayload {

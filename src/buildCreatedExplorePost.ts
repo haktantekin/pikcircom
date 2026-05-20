@@ -2,6 +2,7 @@ import type { ExplorePost } from "@/src/feedPostTypes";
 import type { AuthProfileData } from "@/src/fetchAuthProfile";
 import { pickAvatarUrlFromMap } from "@/src/avatarUrl";
 import { normalizeApiPostPayload } from "@/src/postDetailHelpers";
+import { ingestPostSensitivity } from "@/src/sensitiveContent";
 
 export function buildCreatedExplorePost(options: {
   postId: string;
@@ -30,7 +31,7 @@ export function buildCreatedExplorePost(options: {
     return { slug, name: slug };
   });
 
-  return {
+  const post: ExplorePost = {
     id: postId,
     subject: normalized?.subject ?? description,
     userName,
@@ -44,4 +45,8 @@ export function buildCreatedExplorePost(options: {
     authorIsFollowing: true,
     tags: tags.length > 0 ? tags : undefined,
   };
+
+  ingestPostSensitivity(postId, { tags: post.tags });
+
+  return post;
 }

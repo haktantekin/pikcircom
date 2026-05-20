@@ -1,4 +1,9 @@
 import axios from "axios";
+import {
+  normalizePage,
+  normalizePageSize,
+  slicePageFromFetched,
+} from "@/src/feedPagination";
 import { fetchFlatAuthProfileFromWordPress } from "@/src/server/wp-auth-me-profile";
 
 export type HomeFeedScope = "karma" | "followed";
@@ -258,7 +263,7 @@ async function fetchFollowedFeed(
 ): Promise<{ scope: HomeFeedScope; posts: FeedPost[] }> {
   const limit = Math.min(
     50,
-    Math.max(1, perPage ? Number.parseInt(perPage, 10) || 20 : 20),
+    Math.max(1, perPage ? Number.parseInt(perPage, 10) || 20 : 50),
   );
   const exploreLimit = Math.max(limit * 3, 60);
 
@@ -356,22 +361,44 @@ async function fetchHomeFeedFallback(
   }
 }
 
+function applyFeedPagination(
+  posts: FeedPost[],
+  page?: string,
+  perPage?: string,
+): { posts: FeedPost[]; has_more?: boolean } {
+  if (!page || !perPage) {
+    return { posts };
+  }
+  const pageNum = normalizePage(page);
+  const pageSize = normalizePageSize(perPage);
+  const { items, hasMore } = slicePageFromFetched(posts, pageNum, pageSize);
+  return { posts: items, has_more: hasMore };
+}
+
 export async function fetchHomeFeedFromWordPress(
   wordPressBaseUrl: string,
   scope: HomeFeedScope,
   authToken?: string,
   perPage?: string,
-): Promise<{ scope: HomeFeedScope; posts: FeedPost[] }> {
+  page?: string,
+): Promise<{ scope: HomeFeedScope; posts: FeedPost[]; has_more?: boolean }> {
   if (scope === "followed" && authToken) {
     return fetchFollowedFeed(wordPressBaseUrl, authToken, perPage);
   }
+
+  const pageNum = page ? normalizePage(page) : 0;
+  const pageSize = perPage ? normalizePageSize(perPage) : 0;
+  const usePagination = pageNum > 0 && pageSize > 0;
+  const wpPerPage = usePagination
+    ? String(pageNum * pageSize)
+    : perPage;
 
   try {
     const rawPosts = await fetchWpHomeFeed(
       wordPressBaseUrl,
       scope,
       authToken,
-      perPage,
+      wpPerPage,
     );
 
     let posts = dedupePosts(rawPosts);
@@ -387,21 +414,34 @@ export async function fetchHomeFeedFromWordPress(
     }
 
     if (posts.length === 0) {
-      return fetchHomeFeedFallback(
+      const fallback = await fetchHomeFeedFallback(
         wordPressBaseUrl,
         scope,
         authToken,
-        perPage,
+        wpPerPage,
       );
+      return {
+        scope: fallback.scope,
+        ...applyFeedPagination(fallback.posts, page, perPage),
+      };
     }
 
     return {
       scope,
-      posts,
+      ...applyFeedPagination(posts, page, perPage),
     };
   } catch (error) {
     if (shouldTryFeedFallback(error)) {
-      return fetchHomeFeedFallback(wordPressBaseUrl, scope, authToken, perPage);
+      const fallback = await fetchHomeFeedFallback(
+        wordPressBaseUrl,
+        scope,
+        authToken,
+        wpPerPage,
+      );
+      return {
+        scope: fallback.scope,
+        ...applyFeedPagination(fallback.posts, page, perPage),
+      };
     }
     throw error;
   }
