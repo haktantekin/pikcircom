@@ -19,6 +19,7 @@ import {
   useMasonryColumns,
 } from "@/src/masonryLayout";
 import { useClientPaginatedSlice } from "@/src/useClientPaginatedSlice";
+import { usePrefetchPostImages } from "@/src/usePrefetchPostImages";
 import { sortCollectionPostsByNewest } from "@/src/sortCollectionPosts";
 import {
   applySensitiveMetadataToPosts,
@@ -92,6 +93,11 @@ export default function CollectionPostsImageGrid({
   }, [posts]);
 
   const masonryResetKey = `${fallbackUserName}-${layoutMode}`;
+
+  usePrefetchPostImages(sortedPosts, {
+    variant: "thumb",
+    resetKey: masonryResetKey,
+  });
 
   const { visibleItems, hasMore, isLoadingMore, sentinelRef } =
     useClientPaginatedSlice({

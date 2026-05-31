@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
-const ROOT_MARGIN = "200px";
+const ROOT_MARGIN = "500px";
 
 export interface UseInfiniteScrollOptions {
   onLoadMore: () => void;

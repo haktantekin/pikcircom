@@ -9,6 +9,7 @@ import {
   useMasonryColumns,
 } from "@/src/masonryLayout";
 import { useFeedMasonryColumnCount } from "@/src/useFeedMasonryColumnCount";
+import { usePrefetchPostImages } from "@/src/usePrefetchPostImages";
 
 interface FeedMasonryGridProps {
   posts: MasonryPostCardData[];
@@ -36,6 +37,11 @@ export default function FeedMasonryGrid({
   );
 
   const masonryResetKey = `${resetKey}-${columnCount}`;
+
+  usePrefetchPostImages(posts, {
+    variant: "thumb",
+    resetKey: masonryResetKey,
+  });
 
   const columns = useMasonryColumns({
     items: posts,
