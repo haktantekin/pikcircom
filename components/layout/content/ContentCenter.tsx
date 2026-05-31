@@ -33,7 +33,7 @@ export default function ContentCenter({ type, feedReadOnly = false }: ContentCen
   }, [type]);
   return (
     <>
-      <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
+      <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
         {type === "home" ? (
           <>
             {!feedReadOnly ? <CreatePost /> : null}

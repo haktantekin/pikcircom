@@ -151,6 +151,7 @@
     "sensitiveContentReveal":"Göster",
     "feedLoadingMore":"Daha fazla yükleniyor…",
     "exploreLoadError":"Keşfet gönderileri yüklenemedi.",
+    "profilePostsLoadError":"Pikçirlar yüklenemedi.",
     "exploreEmpty":"Henüz gönderi yok.",
     "exploreTagEmpty":"Bu etikette gönderi yok.",
     "exploreTagsEmpty":"Yayınlanmış etiket yok. İlk gönderiyi sen ekle.",

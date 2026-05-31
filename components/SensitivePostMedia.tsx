@@ -8,7 +8,7 @@ import {
   type SensitivePostInput,
 } from "@/src/sensitiveContent";
 
-export type SensitivePostMediaVariant = "feed" | "thumb" | "grid";
+export type SensitivePostMediaVariant = "feed" | "thumb" | "grid" | "masonry";
 
 interface SensitivePostMediaProps {
   postId?: string;
@@ -25,6 +25,7 @@ const VARIANT_CLASS: Record<SensitivePostMediaVariant, string> = {
   feed: "relative min-h-[200px] w-full overflow-hidden bg-gray-200",
   thumb: "relative min-h-[180px] w-full overflow-hidden rounded bg-gray-200",
   grid: "relative aspect-square w-full overflow-hidden rounded-sm bg-gray-200",
+  masonry: "relative w-full min-h-[140px] overflow-hidden rounded-sm bg-gray-100",
 };
 
 export default function SensitivePostMedia({

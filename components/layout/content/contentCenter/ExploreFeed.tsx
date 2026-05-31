@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import PostList from "./post/PostList";
+import FeedMasonryGrid from "@/components/FeedMasonryGrid";
 import Skeleton from "@/components/Skeleton";
 import FeedLoadMoreSentinel from "@/components/FeedLoadMoreSentinel";
 import { fetchExplorePostsPage } from "@/src/feedApi";
-import { resolveProfileImageUrl } from "@/src/avatarUrl";
-import { pickPostImageUrl } from "@/src/postImageUrl";
+import { explorePostToMasonryCard } from "@/src/feedMasonryHelpers";
 import { useTranslation } from "react-i18next";
 import { prepareExplorePosts, type ExplorePost } from "@/src/feedPostTypes";
 import { FEED_PAGE_SIZE } from "@/src/feedPagination";
@@ -176,39 +175,10 @@ export default function ExploreFeed({
 
   return (
     <>
-      {posts.map((post) => {
-        const author = post.userName?.trim() || "";
-        return (
-          <PostList
-            key={post.id}
-            postId={post.id}
-            userName={author}
-            userLink={author ? `/${author}` : "#"}
-            postLink={author ? `/${author}/posts/${post.id}` : "#"}
-            profileImage={resolveProfileImageUrl(post.profileImage)}
-            time={post.createDate || ""}
-            image={
-              pickPostImageUrl(post.image, post.imageUrls, "feed") ||
-              "/postExample/F5Z00CEaEAAFPgi.jpg"
-            }
-            commentCount={post.commentCount ?? 0}
-            pikCount={post.favoriteCount ?? 0}
-            isFavorited={post.isFavorited}
-            admin={false}
-            postTitle={post.subject}
-            tags={post.tags}
-            categoryName={post.categoryName}
-            isSensitive={post.isSensitive}
-            authorIsFollowing={post.authorIsFollowing === true}
-            profile={false}
-            collectionItem={false}
-            readOnly={readOnly}
-            onDeleted={() =>
-              setPosts((prev) => prev.filter((p) => p.id !== post.id))
-            }
-          />
-        );
-      })}
+      <FeedMasonryGrid
+        posts={posts.map(explorePostToMasonryCard)}
+        resetKey={tagKey}
+      />
       <FeedLoadMoreSentinel
         sentinelRef={sentinelRef}
         hasMore={hasMore}

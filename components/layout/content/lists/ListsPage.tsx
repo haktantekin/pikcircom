@@ -81,7 +81,7 @@ export default function ListsPage() {
   };
 
   return (
-    <div className="relative col-span-12 mb-4 mt-4 lg:col-span-7 lg:mt-0">
+    <div className="relative col-span-12 mb-4 mt-4 lg:col-span-10 lg:mt-0">
       <Tabs
         value={period}
         onTabChange={(value) => setPeriod((value as ListPeriod) || "all")}

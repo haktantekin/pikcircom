@@ -110,6 +110,9 @@ export function ttlForGetUrl(url: string): number {
   if (url.includes("/api/search")) {
     return CLIENT_CACHE_TTL.search;
   }
+  if (/\/api\/profile-posts\//.test(url)) {
+    return CLIENT_CACHE_TTL.profile;
+  }
   if (/\/api\/profile\//.test(url)) {
     return CLIENT_CACHE_TTL.profile;
   }

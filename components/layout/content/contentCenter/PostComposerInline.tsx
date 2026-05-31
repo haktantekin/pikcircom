@@ -57,6 +57,7 @@ export default function PostComposerInline({
     onFile: onFileSelect,
     onInvalidFile: () => alert(t("composeDropInvalid")),
     disabled: isSubmitting,
+    globalPaste: true,
   });
 
   const openFilePicker = () => {
@@ -77,6 +78,7 @@ export default function PostComposerInline({
 
   return (
     <section
+      data-composer-dropzone
       className={`relative mb-4 overflow-hidden rounded-2xl border border-gray-200/80 bg-white ${showOnMobile ? "block" : "hidden lg:block"} ${
         isDragActive ? "border-58b4d1 ring-2 ring-58b4d1/20" : ""
       }`}

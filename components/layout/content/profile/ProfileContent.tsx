@@ -1,5 +1,6 @@
 import { Modal, Tabs } from "@mantine/core";
-import PostList from "./../contentCenter/post/PostList";
+import FeedMasonryGrid from "@/components/FeedMasonryGrid";
+import Skeleton from "@/components/Skeleton";
 import CollectionListItem from "../profile/CollectionListItem";
 import NewCollectionModal from "./NewCollectionModal";
 import {
@@ -7,11 +8,13 @@ import {
   IconPlus,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import FeedLoadMoreSentinel from "@/components/FeedLoadMoreSentinel";
-import { resolveProfileImageUrl } from "@/src/avatarUrl";
-import { pickPostImageUrl } from "@/src/postImageUrl";
+import { profilePostToMasonryCard } from "@/src/feedMasonryHelpers";
+import { subscribePostCreated } from "@/src/postCreatedEvent";
+import { applySensitiveMetadataToPosts } from "@/src/sensitiveContent";
 import { useClientPaginatedSlice } from "@/src/useClientPaginatedSlice";
+import { useProfilePostsFeed } from "@/src/useProfilePostsFeed";
 import {
   profileCollectionsPath,
   profileLikedPath,
@@ -20,8 +23,11 @@ import {
   type ProfileTab,
 } from "@/src/profilePaths";
 import { useTranslation } from "react-i18next";
-import { createCollection, deleteCollection, updateCollection } from "@/configs/client-services";
-import { applySensitiveMetadataToPosts } from "@/src/sensitiveContent";
+import {
+  createCollection,
+  deleteCollection,
+  updateCollection,
+} from "@/configs/client-services";
 
 interface EntryProps {
   category?: number;
@@ -71,6 +77,7 @@ interface CollectionProps {
 interface ProfileContentProps {
   user?: {
     userName?: string;
+    postCount?: number;
     isOwnProfile?: boolean;
     posts?: EntryProps[];
     favoritePosts?: EntryProps[];
@@ -85,7 +92,6 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [createCollectionOpened, setCreateCollectionOpened] = useState(false);
   const [isCreatingCollection, setIsCreatingCollection] = useState(false);
-  const [removedPostIds, setRemovedPostIds] = useState<string[]>([]);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -99,29 +105,13 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
     }
   }, [user]);
 
-  const markPostDeleted = useCallback((postId: string) => {
-    setRemovedPostIds((prev) =>
-      prev.includes(postId) ? prev : [...prev, postId],
-    );
-  }, []);
-
-  const withoutRemoved = useCallback(
-    <T extends { id: string }>(items: T[]) =>
-      items.filter((item) => !removedPostIds.includes(item.id)),
-    [removedPostIds],
-  );
-
-  const userEntries = useMemo(
-    () => withoutRemoved(user?.posts ?? []),
-    [user?.posts, withoutRemoved],
-  );
   const userFavoriteEntries = useMemo(() => {
     const owner = user?.userName?.trim().toLowerCase() ?? "";
-    return withoutRemoved(user?.favoritePosts ?? []).filter((entry) => {
+    return (user?.favoritePosts ?? []).filter((entry) => {
       const author = entry.userName?.trim().toLowerCase() ?? "";
       return author !== owner;
     });
-  }, [user?.favoritePosts, user?.userName, withoutRemoved]);
+  }, [user?.favoritePosts, user?.userName]);
   const userCollections = useMemo(
     () => collectionsOverride ?? user?.collections ?? [],
     [collectionsOverride, user?.collections],
@@ -133,14 +123,41 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
 
   const profileUserName = user?.userName?.trim() ?? "";
   const collectionPosts = useMemo(
-    () => withoutRemoved(selectedCollection?.posts ?? []),
-    [selectedCollection?.posts, withoutRemoved],
+    () => selectedCollection?.posts ?? [],
+    [selectedCollection?.posts],
   );
 
-  const piklerimPaginated = useClientPaginatedSlice({
-    items: userEntries,
-    resetKey: `piklerim-${profileUserName}`,
+  const piklerimFeed = useProfilePostsFeed({
+    userName: profileUserName,
+    postCount: user?.postCount,
+    enabled: activeTab === "piklerim" && Boolean(profileUserName),
   });
+
+  useEffect(() => {
+    if (!user?.isOwnProfile) {
+      return undefined;
+    }
+
+    return subscribePostCreated((detail) => {
+      const explorePost = detail.post;
+      if (!explorePost?.id) {
+        return;
+      }
+
+      piklerimFeed.prependPost({
+        id: String(explorePost.id),
+        subject: explorePost.subject,
+        userName: explorePost.userName ?? profileUserName,
+        createDate: explorePost.createDate,
+        image: explorePost.image,
+        imageUrls: explorePost.imageUrls,
+        tags: explorePost.tags,
+        categoryName: explorePost.categoryName,
+        isSensitive: explorePost.isSensitive,
+      });
+    });
+  }, [user?.isOwnProfile, profileUserName, piklerimFeed.prependPost]);
+
   const likedPaginated = useClientPaginatedSlice({
     items: userFavoriteEntries,
     resetKey: `piklediklerim-${profileUserName}`,
@@ -242,78 +259,41 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
           )}
         </Tabs.List>
         <Tabs.Panel value="piklerim" pt="lg">
-          {piklerimPaginated.visibleItems.map((x) => {
-            return (
-              <React.Fragment key={x.id}>
-                <PostList
-                  postId={x.id}
-                  userName={x.userName || user?.userName || ''}
-                  userLink={`/${x.userName || user?.userName || ''}`}
-                  postLink={`/${x.userName || user?.userName || ''}/posts/${x.id}`}
-                  profileImage={resolveProfileImageUrl(x.profileImage)}
-                  time={x.createDate || ''}
-                  image={
-                    pickPostImageUrl(x.image, x.imageUrls, "feed") ||
-                    `/postExample/Dp-lP3mWkAAinKk.jpg`
-                  }
-                  commentCount={x.commentCount ?? 0}
-                  pikCount={x.favoriteCount ?? 0}
-                  isFavorited={x.isFavorited}
-                  admin={false}
-                  postTitle={x.subject}
-                  tags={x.tags}
-                  categoryName={x.categoryName}
-                  isSensitive={x.isSensitive}
-                  profile={true}
-                  collectionItem={false}
-                  collections={userCollections}
-                  onCollectionsChange={setCollectionsOverride}
-                  readOnly={readOnly}
-                  onDeleted={() => markPostDeleted(x.id)}
-                />
-              </React.Fragment>
-            );
-          })}
-          <FeedLoadMoreSentinel
-            sentinelRef={piklerimPaginated.sentinelRef}
-            hasMore={piklerimPaginated.hasMore}
-            isLoadingMore={piklerimPaginated.isLoadingMore}
-          />
+          {piklerimFeed.isLoading ? (
+            <div className="mt-4">
+              <Skeleton />
+            </div>
+          ) : piklerimFeed.error ? (
+            <section className="mb-4 w-full rounded-xl border border-gray-100 bg-white p-6 text-center text-sm text-red-600 shadow-card">
+              {t("profilePostsLoadError")}
+            </section>
+          ) : piklerimFeed.posts.length === 0 ? (
+            <section className="mb-4 w-full rounded-xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-500 shadow-card">
+              {t("profileMyPiks")}
+            </section>
+          ) : (
+            <>
+              <FeedMasonryGrid
+                posts={piklerimFeed.posts.map((x) =>
+                  profilePostToMasonryCard(x, user?.userName),
+                )}
+                resetKey={`piklerim-${profileUserName}`}
+              />
+              <FeedLoadMoreSentinel
+                sentinelRef={piklerimFeed.sentinelRef}
+                hasMore={piklerimFeed.hasMore}
+                isLoadingMore={piklerimFeed.isLoadingMore}
+              />
+            </>
+          )}
         </Tabs.Panel>
         <Tabs.Panel value="piklediklerim" pt="lg">
-        {likedPaginated.visibleItems.map((x) => {
-            const authorSlug = x.userName?.trim() || "";
-            return (
-              <React.Fragment key={x.id}>
-                <PostList
-                  postId={x.id}
-                  userName={authorSlug}
-                  userLink={authorSlug ? `/${authorSlug}` : "#"}
-                  postLink={authorSlug ? `/${authorSlug}/posts/${x.id}` : "#"}
-                  profileImage={resolveProfileImageUrl(x.profileImage)}
-                  time={x.createDate || ''}
-                  image={
-                    pickPostImageUrl(x.image, x.imageUrls, "feed") ||
-                    `/postExample/Dp-lP3mWkAAinKk.jpg`
-                  }
-                  commentCount={x.commentCount ?? 0}
-                  pikCount={x.favoriteCount ?? 0}
-                  isFavorited={x.isFavorited ?? true}
-                  admin={false}
-                  postTitle={x.subject}
-                  tags={x.tags}
-                  categoryName={x.categoryName}
-                  isSensitive={x.isSensitive}
-                  profile={true}
-                  collectionItem={false}
-                  collections={userCollections}
-                  onCollectionsChange={setCollectionsOverride}
-                  readOnly={readOnly}
-                  onDeleted={() => markPostDeleted(x.id)}
-                />
-              </React.Fragment>
-            );
-          })}
+          <FeedMasonryGrid
+            posts={likedPaginated.visibleItems.map((x) =>
+              profilePostToMasonryCard(x),
+            )}
+            resetKey={`piklediklerim-${profileUserName}`}
+          />
           <FeedLoadMoreSentinel
             sentinelRef={likedPaginated.sentinelRef}
             hasMore={likedPaginated.hasMore}
@@ -380,42 +360,17 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
                 </span>
                 &nbsp;{t("collectionNameTitle")}
               </div>
-              <div className="grid grid-cols-1 gap-4">
-                {collectionPaginated.visibleItems.map((post) => (
-                  <PostList
-                    key={post.id}
-                    postId={post.id}
-                    userName={post.userName || user?.userName || ''}
-                    userLink={`/${post.userName || user?.userName || ''}`}
-                    postLink={`/${post.userName || user?.userName || ''}/posts/${post.id}`}
-                    profileImage={resolveProfileImageUrl(post.profileImage)}
-                    time={post.createDate || ''}
-                    image={
-                      pickPostImageUrl(post.image, post.imageUrls, "feed") ||
-                      `/postExample/F5Z00CEaEAAFPgi.jpg`
-                    }
-                    commentCount={post.commentCount ?? 0}
-                    pikCount={post.favoriteCount ?? 0}
-                    isFavorited={post.isFavorited}
-                    admin={false}
-                    postTitle={post.subject}
-                    tags={post.tags}
-                    categoryName={post.categoryName}
-                    isSensitive={post.isSensitive}
-                    profile={true}
-                    collectionItem={true}
-                    collections={userCollections}
-                    onCollectionsChange={setCollectionsOverride}
-                    readOnly={readOnly}
-                    onDeleted={() => markPostDeleted(post.id)}
-                  />
-                ))}
-                <FeedLoadMoreSentinel
-                  sentinelRef={collectionPaginated.sentinelRef}
-                  hasMore={collectionPaginated.hasMore}
-                  isLoadingMore={collectionPaginated.isLoadingMore}
-                />
-              </div>
+              <FeedMasonryGrid
+                posts={collectionPaginated.visibleItems.map((post) =>
+                  profilePostToMasonryCard(post, user?.userName),
+                )}
+                resetKey={`collection-inline-${selectedCollectionId ?? ""}`}
+              />
+              <FeedLoadMoreSentinel
+                sentinelRef={collectionPaginated.sentinelRef}
+                hasMore={collectionPaginated.hasMore}
+                isLoadingMore={collectionPaginated.isLoadingMore}
+              />
             </>
           )}
           </Tabs.Panel>

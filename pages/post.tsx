@@ -1,5 +1,4 @@
 import ContentLeft from "@/components/layout/content/ContentLeft";
-import ContentRight from "@/components/layout/content/ContentRight";
 import PostContent from "@/components/layout/content/post/Index";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
@@ -18,7 +17,6 @@ export default function Profile() {
           <div className="grid grid-cols-12 gap-4">
             <ContentLeft />
             <PostContent />
-            <ContentRight />
           </div>
         </div>
       </main>

@@ -1,5 +1,4 @@
 import ContentLeft from "@/components/layout/content/ContentLeft";
-import ContentRight from "@/components/layout/content/ContentRight";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
 import {
@@ -138,7 +137,7 @@ export default function CollectionDetail() {
         <div className="container lg:mt-3">
           <div className="grid grid-cols-12 gap-4">
             <ContentLeft />
-            <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
+            <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
               {!collection ? (
                 <div className="bg-white flex justify-center items-center min-h-[100px] px-24 text-center text-sm rounded">
                   <span>Bu koleksiyon bulunamadı.</span>
@@ -177,7 +176,6 @@ export default function CollectionDetail() {
                 </>
               )}
             </div>
-            <ContentRight />
           </div>
         </div>
       </main>

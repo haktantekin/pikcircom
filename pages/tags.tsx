@@ -1,5 +1,4 @@
 import ContentLeft from "@/components/layout/content/ContentLeft";
-import ContentRight from "@/components/layout/content/ContentRight";
 import TagsPageContent from "@/components/layout/content/tags/TagsPage";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
@@ -25,7 +24,6 @@ export default function TagsPage() {
           <div className="grid grid-cols-12 gap-4">
             <ContentLeft />
             <TagsPageContent />
-            <ContentRight />
           </div>
         </div>
       </main>

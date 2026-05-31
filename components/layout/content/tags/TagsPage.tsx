@@ -79,7 +79,7 @@ export default function TagsPage() {
   const tagHeading = selectedTagName || selectedTag;
 
   return (
-    <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
+    <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
       <div className="flex lg:hidden relative mt-0 mb-4 justify-center items-center">
         <Search />
       </div>

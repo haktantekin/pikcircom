@@ -1,5 +1,4 @@
 import ContentLeft from "@/components/layout/content/ContentLeft";
-import ContentRight from "@/components/layout/content/ContentRight";
 import ProfileCenterLayout from "@/components/layout/content/ProfileCenterLayout";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
@@ -188,7 +187,6 @@ export default function ProfilePageShell({ activeTab }: ProfilePageShellProps) {
               onProfileUpdated={refreshProfile}
               readOnly={feedReadOnly}
             />
-            <ContentRight readOnly={feedReadOnly} />
           </div>
         </div>
       </main>

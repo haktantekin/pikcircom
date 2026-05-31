@@ -1,5 +1,4 @@
 import ContentLeft from "@/components/layout/content/ContentLeft";
-import ContentRight from "@/components/layout/content/ContentRight";
 import { resolvePostAuthorProfileImage } from "@/src/avatarUrl";
 import { pickPostImageUrl } from "@/src/postImageUrl";
 import PostItem from "@/components/layout/content/post/PostItem";
@@ -130,7 +129,7 @@ export default function PostDetail() {
         <div className="container lg:mt-3">
           <div className="grid grid-cols-12 gap-4">
             <ContentLeft />
-            <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
+            <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
               <div
                 className="w-full bg-white rounded mb-4 text-sm text-center min-h-[40px] flex justify-center items-center relative mt-3"
                 style={{
@@ -192,7 +191,6 @@ export default function PostDetail() {
                 />
               )}
             </div>
-            <ContentRight readOnly={feedReadOnly} />
           </div>
         </div>
       </main>

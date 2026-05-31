@@ -151,6 +151,7 @@
     "sensitiveContentReveal":"Show",
     "feedLoadingMore":"Loading more…",
     "exploreLoadError":"Could not load explore posts.",
+    "profilePostsLoadError":"Could not load your Pikcirs.",
     "exploreEmpty":"No posts yet.",
     "exploreTagEmpty":"No posts with this tag.",
     "exploreTagsEmpty":"No published tags yet. Be the first to post.",

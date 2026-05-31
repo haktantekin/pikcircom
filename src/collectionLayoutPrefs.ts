@@ -1,7 +1,7 @@
 export type CollectionLayoutMode = "timeline" | "cols2" | "cols3";
 
 const STORAGE_KEY = "pikcir:collection-layout";
-const DEFAULT_MODE: CollectionLayoutMode = "cols3";
+const DEFAULT_MODE: CollectionLayoutMode = "cols2";
 
 function isCollectionLayoutMode(value: string): value is CollectionLayoutMode {
   return value === "timeline" || value === "cols2" || value === "cols3";

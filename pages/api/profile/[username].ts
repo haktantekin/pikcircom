@@ -62,6 +62,9 @@ export default async function handler(
         headers: authToken
           ? { Authorization: `Bearer ${authToken}` }
           : undefined,
+        params: {
+          posts_per_page: 12,
+        },
       },
     );
 

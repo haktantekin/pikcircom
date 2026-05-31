@@ -35,6 +35,8 @@ function bindInvalidation(): void {
   subscribePostCreated(() => {
     invalidateClientCache("GET:/api/home-feed");
     invalidateClientCache("GET:/api/explore");
+    invalidateClientCache("GET:/api/profile-posts/");
+    invalidateClientCache("GET:/api/profile/");
   });
 
   subscribeFollowChanged(() => {

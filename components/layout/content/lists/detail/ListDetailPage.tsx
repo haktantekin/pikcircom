@@ -11,6 +11,7 @@ import ListDetailTimeline from "./ListDetailTimeline";
 import Skeleton from "@/components/Skeleton";
 import FeedLoadMoreSentinel from "@/components/FeedLoadMoreSentinel";
 import PostComposer from "@/components/layout/content/contentCenter/PostComposer";
+import { applySensitiveMetadataToPosts } from "@/src/sensitiveContent";
 import { FEED_GRID_PAGE_SIZE, FEED_PAGE_SIZE } from "@/src/feedPagination";
 import { useClientPaginatedSlice } from "@/src/useClientPaginatedSlice";
 
@@ -41,9 +42,9 @@ function ListDetailPostsView({
   return (
     <>
       {viewMode === "grid" ? (
-        <ListDetailGrid posts={visibleItems} />
+        <ListDetailGrid posts={visibleItems} resetKey={resetKey} />
       ) : (
-        <ListDetailTimeline posts={visibleItems} />
+        <ListDetailTimeline posts={visibleItems} resetKey={resetKey} />
       )}
       <FeedLoadMoreSentinel
         sentinelRef={sentinelRef}
@@ -78,7 +79,11 @@ export default function ListDetailPage({ slug }: ListDetailPageProps) {
         }
         setListName(response.data.list?.name ?? "");
         setListId(String(response.data.list?.id ?? ""));
-        setPosts(response.data.posts ?? []);
+        setPosts(
+          applySensitiveMetadataToPosts(
+            (response.data.posts ?? []) as ListDetailPost[],
+          ),
+        );
       } catch {
         if (!cancelled) {
           setNotFound(true);
@@ -104,7 +109,7 @@ export default function ListDetailPage({ slug }: ListDetailPageProps) {
   };
 
   return (
-    <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
+    <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
       <Tabs
         value={period}
         onTabChange={(value) => setPeriod((value as ListPeriod) || "all")}

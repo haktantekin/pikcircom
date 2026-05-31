@@ -1,5 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
+import { MasonryPreviewGrid } from "@/components/MasonryPostCard";
+import { useResponsiveMasonryColumnCount } from "@/src/useResponsiveMasonryColumnCount";
 import { listPath } from "@/src/listPaths";
 
 interface ListItemProps {
@@ -9,12 +10,18 @@ interface ListItemProps {
   previewImages: string[];
 }
 
-export default function ListItem({ slug, name, postCount, previewImages }: ListItemProps) {
+export default function ListItem({
+  slug,
+  name,
+  postCount,
+  previewImages,
+}: ListItemProps) {
   const href = listPath(slug);
   const images = previewImages.filter(
     (src) => typeof src === "string" && src.trim() !== "",
   );
   const showPreview = images.length > 0;
+  const previewColumns = useResponsiveMasonryColumnCount(2, 2, "(min-width: 1024px)");
 
   return (
     <Link
@@ -24,23 +31,18 @@ export default function ListItem({ slug, name, postCount, previewImages }: ListI
       <div
         className={`bg-gradient-to-r from-gray-50/80 to-white px-4 py-3 ${showPreview ? "border-b border-gray-100" : ""}`}
       >
-        <span className="text-base font-semibold text-58b4d1">
-          {name}
-        </span>
+        <span className="text-base font-semibold text-58b4d1">{name}</span>
         <span className="ml-1.5 text-sm font-normal tabular-nums text-gray-500">
           ({postCount})
         </span>
       </div>
       {showPreview ? (
-        <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-4 lg:gap-3">
-          {images.slice(0, 4).map((src, index) => (
-            <div
-              className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-100 transition-transform duration-200 group-hover:ring-58b4d1/20"
-              key={`${slug}-${index}`}
-            >
-              <Image src={src} alt="" fill className="object-cover" unoptimized />
-            </div>
-          ))}
+        <div className="p-3">
+          <MasonryPreviewGrid
+            urls={images.slice(0, 4)}
+            columnCount={previewColumns}
+            gapClassName="gap-2 lg:gap-3"
+          />
         </div>
       ) : null}
     </Link>

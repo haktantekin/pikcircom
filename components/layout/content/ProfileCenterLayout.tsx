@@ -80,7 +80,7 @@ export default function ProfileCenterLayout({
   readOnly = false,
 }: ProfileCenterLayoutProps) {
   return (
-    <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
+    <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
       {userCheck === 2 && (
         <>
           <div className="bg-white flex justify-center items-center min-h-[100px] px-24 text-center text-sm">

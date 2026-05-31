@@ -1,6 +1,4 @@
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   IconLayoutColumns,
@@ -8,14 +6,18 @@ import {
   IconList,
 } from "@tabler/icons-react";
 import FeedLoadMoreSentinel from "@/components/FeedLoadMoreSentinel";
-import SensitivePostMedia from "@/components/SensitivePostMedia";
+import MasonryPostCard from "@/components/MasonryPostCard";
+import MasonryPostGrid from "@/components/MasonryPostGrid";
 import {
   getCollectionLayoutMode,
   setCollectionLayoutMode,
   type CollectionLayoutMode,
 } from "@/src/collectionLayoutPrefs";
-import { pickPostImageUrl } from "@/src/postImageUrl";
 import { FEED_GRID_PAGE_SIZE } from "@/src/feedPagination";
+import {
+  estimateMasonryItemHeight,
+  useMasonryColumns,
+} from "@/src/masonryLayout";
 import { useClientPaginatedSlice } from "@/src/useClientPaginatedSlice";
 import { sortCollectionPostsByNewest } from "@/src/sortCollectionPosts";
 import {
@@ -34,6 +36,8 @@ export interface CollectionGridPost {
   image?: string;
   imageUrls?: Record<string, string>;
   tags?: PostTagLike[];
+  imageWidth?: number;
+  imageHeight?: number;
 }
 
 interface CollectionPostsImageGridProps {
@@ -42,11 +46,15 @@ interface CollectionPostsImageGridProps {
   fallbackUserName: string;
 }
 
-const GRID_CLASS: Record<CollectionLayoutMode, string> = {
-  timeline: "grid-cols-1",
-  cols2: "grid-cols-2",
-  cols3: "grid-cols-3",
-};
+function layoutModeToColumnCount(mode: CollectionLayoutMode): number {
+  if (mode === "cols2") {
+    return 2;
+  }
+  if (mode === "cols3") {
+    return 3;
+  }
+  return 1;
+}
 
 function postHref(post: CollectionGridPost, fallbackUserName: string): string {
   const author = (post.userName || fallbackUserName || "").trim();
@@ -83,12 +91,31 @@ export default function CollectionPostsImageGrid({
     return applySensitiveMetadataToPosts(sorted);
   }, [posts]);
 
+  const masonryResetKey = `${fallbackUserName}-${layoutMode}`;
+
   const { visibleItems, hasMore, isLoadingMore, sentinelRef } =
     useClientPaginatedSlice({
       items: sortedPosts,
       pageSize: FEED_GRID_PAGE_SIZE,
-      resetKey: `${fallbackUserName}-${layoutMode}`,
+      resetKey: masonryResetKey,
     });
+
+  const columnCount = layoutModeToColumnCount(layoutMode);
+
+  const getItemId = useCallback((post: CollectionGridPost) => post.id, []);
+
+  const estimateHeight = useCallback(
+    (post: CollectionGridPost) => estimateMasonryItemHeight(post),
+    [],
+  );
+
+  const columns = useMasonryColumns({
+    items: visibleItems,
+    columnCount,
+    getItemId,
+    estimateHeight,
+    resetKey: masonryResetKey,
+  });
 
   const selectLayout = (mode: CollectionLayoutMode) => {
     setLayoutMode(mode);
@@ -134,42 +161,19 @@ export default function CollectionPostsImageGrid({
         </button>
       </div>
 
-      <section
-        className={`grid w-full gap-1.5 sm:gap-2 ${GRID_CLASS[layoutMode]}`}
-      >
-        {visibleItems.map((post) => {
-          const href = postHref(post, fallbackUserName);
-          const src =
-            pickPostImageUrl(post.image, post.imageUrls, "grid") ||
-            "/postExample/F5Z00CEaEAAFPgi.jpg";
-          const label = post.subject?.trim() || `post ${post.id}`;
-          return (
-            <SensitivePostMedia
-              key={post.id}
-              postId={post.id}
-              tags={post.tags}
-                categoryName={post.categoryName}
-                isSensitive={post.isSensitive}
-                variant="grid"
-            >
-              <Link
-                href={href}
-                className="relative block aspect-square overflow-hidden rounded-sm border border-gray-100 outline-none ring-58b4d1 transition hover:opacity-95 focus-visible:ring-2"
-                aria-label={label}
-                title={label}
-              >
-                <Image
-                  src={src}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes={imageSizes(layoutMode)}
-                />
-              </Link>
-            </SensitivePostMedia>
-          );
-        })}
-      </section>
+      <MasonryPostGrid
+        columns={columns}
+        gapClassName="gap-1.5 sm:gap-2"
+        renderItem={(post) => (
+          <MasonryPostCard
+            key={post.id}
+            post={post}
+            href={postHref(post, fallbackUserName)}
+            imageVariant="thumb"
+            sizes={imageSizes(layoutMode)}
+          />
+        )}
+      />
 
       <FeedLoadMoreSentinel
         sentinelRef={sentinelRef}

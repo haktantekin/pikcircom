@@ -54,6 +54,14 @@ export const profile = () =>
 export const getProfileByUserName = (userName) =>
   client.get(`/api/profile/${encodeURIComponent(userName)}`);
 
+export const getProfilePosts = (userName, { page, perPage } = {}) =>
+  client.get(`/api/profile-posts/${encodeURIComponent(userName)}`, {
+    params: {
+      ...(page ? { page } : {}),
+      ...(perPage ? { per_page: perPage } : {}),
+    },
+  });
+
 export const updateProfile = (payload) =>
   client.post(`/api/profile/me`, payload);
 

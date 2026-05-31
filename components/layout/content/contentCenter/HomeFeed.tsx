@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import PostList from "./post/PostList";
+import FeedMasonryGrid from "@/components/FeedMasonryGrid";
 import Skeleton from "@/components/Skeleton";
 import FeedLoadMoreSentinel from "@/components/FeedLoadMoreSentinel";
 import { fetchHomeFeedPage } from "@/src/feedApi";
-import { resolveProfileImageUrl } from "@/src/avatarUrl";
+import { explorePostToMasonryCard } from "@/src/feedMasonryHelpers";
 import { subscribePostCreated } from "@/src/postCreatedEvent";
 import { subscribeAuthSessionChanged } from "@/src/authSessionEvent";
 import { useTranslation } from "react-i18next";
 import { prepareExplorePosts, type ExplorePost } from "@/src/feedPostTypes";
-import { pickPostImageUrl } from "@/src/postImageUrl";
 import { fetchAuthProfile } from "@/src/fetchAuthProfile";
 import { FEED_PAGE_SIZE } from "@/src/feedPagination";
 import { useClientPaginatedSlice } from "@/src/useClientPaginatedSlice";
@@ -125,45 +124,6 @@ interface HomeFeedProps {
   scope: HomeFeedScope;
   refreshKey?: number;
   readOnly?: boolean;
-}
-
-function renderPostCard(
-  post: ExplorePost,
-  scope: HomeFeedScope,
-  readOnly: boolean,
-  onPostDeleted: (postId: string) => void,
-) {
-  const author = post.userName?.trim() || "";
-  return (
-    <PostList
-      key={post.id}
-      postId={post.id}
-      userName={author}
-      userLink={author ? `/${author}` : "#"}
-      postLink={author ? `/${author}/posts/${post.id}` : "#"}
-      profileImage={resolveProfileImageUrl(post.profileImage)}
-      time={post.createDate || ""}
-      image={
-        pickPostImageUrl(post.image, post.imageUrls, "feed") ||
-        "/postExample/F5Z00CEaEAAFPgi.jpg"
-      }
-      commentCount={post.commentCount ?? 0}
-      pikCount={post.favoriteCount ?? 0}
-      isFavorited={post.isFavorited}
-      admin={false}
-      postTitle={post.subject}
-      tags={post.tags}
-      categoryName={post.categoryName}
-      isSensitive={post.isSensitive}
-      authorIsFollowing={
-        scope === "followed" || post.authorIsFollowing === true
-      }
-      profile={false}
-      collectionItem={false}
-      readOnly={readOnly}
-      onDeleted={() => onPostDeleted(post.id)}
-    />
-  );
 }
 
 export default function HomeFeed({
@@ -408,13 +368,6 @@ export default function HomeFeed({
     };
   }, [isLoading, error, scope, isGuest, isServerPaginated, fetchKarmaPage]);
 
-  const handlePostDeleted = useCallback((deletedId: string) => {
-    setPosts((prev) => prev.filter((p) => p.id !== deletedId));
-    pendingNewPostsRef.current = pendingNewPostsRef.current.filter(
-      (p) => p.id !== deletedId,
-    );
-  }, []);
-
   const applyPendingNewPiks = useCallback(() => {
     const incoming = pendingNewPostsRef.current;
     if (incoming.length === 0) {
@@ -493,9 +446,10 @@ export default function HomeFeed({
         labelOver={t("feedNewPiksBarOver")}
         labelCount={t("feedNewPiksBar", { count: pendingNewCount })}
       />
-      {displayPosts.map((post) =>
-        renderPostCard(post, scope, readOnly, handlePostDeleted),
-      )}
+      <FeedMasonryGrid
+        posts={displayPosts.map(explorePostToMasonryCard)}
+        resetKey={listResetKey}
+      />
       <FeedLoadMoreSentinel
         sentinelRef={sentinelRef}
         hasMore={showSentinel}

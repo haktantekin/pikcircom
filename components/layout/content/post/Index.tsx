@@ -8,7 +8,7 @@ export default function PostContent() {
   const { t } = useTranslation();
   return (
     <>
-      <div className="col-span-12 lg:col-span-7 relative mb-4 mt-4 lg:mt-0">
+      <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
         <ProfileHeader />
         <div className='w-full bg-white rounded mb-4 text-sm text-center min-h-[40px] flex justify-center items-center relative mt-3' style={{ boxShadow: "rgba(33, 35, 38, 0.1) 0px 10px 10px -10px" }}>
           <div className='font-bold text-sm text-126782'>{t("pikcirDetail")}</div>

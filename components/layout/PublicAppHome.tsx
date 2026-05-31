@@ -1,6 +1,5 @@
 import ContentCenter from "@/components/layout/content/ContentCenter";
 import ContentLeft from "@/components/layout/content/ContentLeft";
-import ContentRight from "@/components/layout/content/ContentRight";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
 import Head from "next/head";
@@ -25,7 +24,6 @@ export default function PublicAppHome() {
           <div className="grid grid-cols-12 gap-4">
             <ContentLeft />
             <ContentCenter type="home" feedReadOnly={feedReadOnly} />
-            <ContentRight readOnly={feedReadOnly} />
           </div>
         </div>
       </main>

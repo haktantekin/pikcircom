@@ -15,6 +15,8 @@ import { buildCreatedExplorePost } from "@/src/buildCreatedExplorePost";
 import { pickAvatarUrlFromMap } from "@/src/avatarUrl";
 import { fileToImageDataUrl } from "@/src/imageDataUrl";
 import { fetchAuthProfile } from "@/src/fetchAuthProfile";
+import { pickComposerImageFile } from "@/src/composerImageFile";
+import { useComposerImageDrop } from "@/src/useComposerImageDrop";
 
 export interface CreatedPostPayload {
   id: string;
@@ -59,6 +61,13 @@ export default function PostComposer({
 
   const isInline = variant === "inline";
 
+  const { dropZoneProps: modalDropZoneProps } = useComposerImageDrop({
+    onFile: setFile,
+    onInvalidFile: () => alert(t("composeDropInvalid")),
+    disabled: isSubmitting || isInline,
+    globalPaste: !isInline,
+  });
+
   useEffect(() => {
     if (fixedList?.id) {
       setListIds([fixedList.id]);
@@ -98,9 +107,11 @@ export default function PostComposer({
   };
 
   const onModalFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = event.target.files?.[0];
+    const selected = pickComposerImageFile(event.target.files);
     if (selected) {
       setFile(selected);
+    } else if (event.target.files && event.target.files.length > 0) {
+      alert(t("composeDropInvalid"));
     }
     event.target.value = "";
   };
@@ -235,7 +246,11 @@ export default function PostComposer({
 
 
   return (
-    <div className="flex w-full max-w-full flex-col items-center">
+    <div
+      data-composer-dropzone
+      className="flex w-full max-w-full flex-col items-center"
+      {...modalDropZoneProps}
+    >
       <input
         ref={fileInputRef}
         type="file"
