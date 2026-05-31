@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import MasonryPostGrid from "@/components/MasonryPostGrid";
 import SensitivePostMedia from "@/components/SensitivePostMedia";
 import { distributePreviewUrlsToColumns } from "@/src/masonryLayout";
 import type { PostImageVariant } from "@/src/postImageUrl";
 import { pickPostImageUrl } from "@/src/postImageUrl";
+import { normalizeMediaUrl } from "@/src/normalizePostMedia";
 import type { PostTagLike } from "@/src/sensitiveContent";
 
 export interface MasonryPostCardData {
@@ -44,11 +46,17 @@ export default function MasonryPostCard({
   roundedClassName = "rounded-sm",
   showMeta = false,
 }: MasonryPostCardProps) {
-  const src =
-    pickPostImageUrl(post.image, post.imageUrls, imageVariant) ||
-    DEFAULT_FALLBACK;
+  const initialSrc =
+    normalizeMediaUrl(
+      pickPostImageUrl(post.image, post.imageUrls, imageVariant),
+    ) || DEFAULT_FALLBACK;
+  const [imageSrc, setImageSrc] = useState(initialSrc);
   const label = post.subject?.trim() || `post ${post.id}`;
   const author = post.userName?.trim();
+
+  useEffect(() => {
+    setImageSrc(initialSrc);
+  }, [initialSrc, post.id]);
 
   return (
     <SensitivePostMedia
@@ -58,6 +66,7 @@ export default function MasonryPostCard({
       isSensitive={post.isSensitive}
       variant="masonry"
       className={roundedClassName}
+      previewLabel={label}
     >
       <Link
         href={href}
@@ -66,12 +75,18 @@ export default function MasonryPostCard({
         title={label}
       >
         <Image
-          src={src}
+          src={imageSrc}
           alt=""
           width={740}
           height={1000}
           className={imageClassName}
           sizes={sizes}
+          unoptimized
+          onError={() => {
+            if (imageSrc !== DEFAULT_FALLBACK) {
+              setImageSrc(DEFAULT_FALLBACK);
+            }
+          }}
         />
         {showMeta && (post.subject?.trim() || author) ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent px-2.5 pb-2.5 pt-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">

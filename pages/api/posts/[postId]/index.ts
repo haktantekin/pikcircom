@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { extractPostFromApiPayload } from "@/src/normalizePostMedia";
 
 const AUTH_COOKIE_NAME = "auth_token";
 
@@ -44,7 +45,8 @@ export default async function handler(
 
       const { data, status } = await axios.get(postUrl, { headers });
 
-      return res.status(status).json(data);
+      const normalized = extractPostFromApiPayload(data);
+      return res.status(status).json(normalized ? { post: normalized } : data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const statusCode = error.response?.status ?? 500;

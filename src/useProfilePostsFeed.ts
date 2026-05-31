@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getProfilePosts } from "@/configs/client-services";
 import { FEED_GRID_PAGE_SIZE } from "@/src/feedPagination";
+import { mergePostsById } from "@/src/normalizePostMedia";
 import { applySensitiveMetadataToPosts } from "@/src/sensitiveContent";
 import { useInfiniteScroll } from "@/src/useInfiniteScroll";
 
@@ -39,15 +40,25 @@ function appendUniquePosts(
   return next;
 }
 
+function sortPostsNewestFirst(posts: ProfileFeedPost[]): ProfileFeedPost[] {
+  return [...posts].sort((left, right) => {
+    const leftTime = Date.parse(String(left.createDate ?? "")) || 0;
+    const rightTime = Date.parse(String(right.createDate ?? "")) || 0;
+    return rightTime - leftTime;
+  });
+}
+
 interface UseProfilePostsFeedOptions {
   userName: string;
   postCount?: number;
+  seedPosts?: ProfileFeedPost[];
   enabled?: boolean;
 }
 
 export function useProfilePostsFeed({
   userName,
   postCount,
+  seedPosts = [],
   enabled = true,
 }: UseProfilePostsFeedOptions) {
   const [posts, setPosts] = useState<ProfileFeedPost[]>([]);
@@ -89,20 +100,26 @@ export function useProfilePostsFeed({
         }
 
         const batch = (response.data?.posts ?? []) as ProfileFeedPost[];
-        applySensitiveMetadataToPosts(batch);
+        const merged = sortPostsNewestFirst(
+          mergePostsById(
+            batch.filter((post) => postKey(post)),
+            seedPosts.filter((post) => postKey(post)),
+          ),
+        );
+        applySensitiveMetadataToPosts(merged);
 
         const total =
           typeof response.data?.post_count === "number"
             ? response.data.post_count
-            : postCount;
+            : postCount ?? merged.length;
 
         const more =
           response.data?.has_more === true ||
-          (total != null && batch.length < total) ||
+          (total != null && merged.length < total) ||
           (response.data?.has_more !== false &&
             batch.length >= FEED_GRID_PAGE_SIZE);
 
-        setPosts(batch);
+        setPosts(merged);
         setPage(1);
         setHasMore(more);
       } catch {
@@ -122,7 +139,7 @@ export function useProfilePostsFeed({
     return () => {
       cancelled = true;
     };
-  }, [enabled, userName, postCount]);
+  }, [enabled, userName, postCount, seedPosts]);
 
   const loadMore = useCallback(async () => {
     if (!enabled || !userName.trim() || !hasMore || isLoadingMore || isLoading) {

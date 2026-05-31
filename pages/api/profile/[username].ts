@@ -1,6 +1,7 @@
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { setApiCacheHeaders } from "@/src/apiResponseCache";
+import { normalizePostsMediaFields } from "@/src/normalizePostMedia";
 import { handleProfileMe } from "./lib/profile-me-handler";
 import { AUTH_TOKEN_COOKIE_NAME } from "@/src/server/wp-auth-me-profile";
 
@@ -70,8 +71,35 @@ export default async function handler(
 
     setApiCacheHeaders(res, "profile");
 
+    const user = data.user ?? null;
+    if (user && typeof user === "object") {
+      const profileUser = user as Record<string, unknown>;
+      if (Array.isArray(profileUser.posts)) {
+        profileUser.posts = normalizePostsMediaFields(
+          profileUser.posts as Array<Record<string, unknown>>,
+        );
+      }
+      if (Array.isArray(profileUser.favoritePosts)) {
+        profileUser.favoritePosts = normalizePostsMediaFields(
+          profileUser.favoritePosts as Array<Record<string, unknown>>,
+        );
+      }
+      if (Array.isArray(profileUser.collections)) {
+        profileUser.collections = (
+          profileUser.collections as Array<Record<string, unknown>>
+        ).map((collection) => ({
+          ...collection,
+          posts: Array.isArray(collection.posts)
+            ? normalizePostsMediaFields(
+                collection.posts as Array<Record<string, unknown>>,
+              )
+            : collection.posts,
+        }));
+      }
+    }
+
     return res.status(200).json({
-      user: data.user ?? null,
+      user,
     });
   } catch (error) {
     if (axios.isAxiosError(error)) {

@@ -130,6 +130,7 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
   const piklerimFeed = useProfilePostsFeed({
     userName: profileUserName,
     postCount: user?.postCount,
+    seedPosts: user?.posts ?? [],
     enabled: activeTab === "piklerim" && Boolean(profileUserName),
   });
 

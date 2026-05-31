@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { enrichPostsWithTagsFromCatalog } from "@/src/sensitiveContent";
+import { useHydratedCollectionPosts } from "@/src/useHydratedCollectionPosts";
 
 interface CollectionPostProps {
   id: string;
@@ -116,6 +117,11 @@ export default function CollectionDetail() {
     return enrichPostsWithTagsFromCatalog(collection?.posts ?? [], catalog);
   }, [collection?.posts, user?.posts, user?.favoritePosts]);
 
+  const { posts: collectionPosts, isHydrating } = useHydratedCollectionPosts(
+    enrichedPosts,
+    collection?.postIds,
+  );
+
   if (!router.isReady || loading) return null;
 
   return (
@@ -161,10 +167,10 @@ export default function CollectionDetail() {
                     </span>
                     &nbsp;{t("collectionNameTitle")}
                   </div>
-                  {(collection.posts ?? []).length > 0 ? (
+                  {(collectionPosts.length > 0 || isHydrating) ? (
                     <div className="rounded-lg bg-white p-1 shadow-card sm:p-2">
                       <CollectionPostsImageGrid
-                        posts={enrichedPosts}
+                        posts={collectionPosts}
                         fallbackUserName={user?.userName || profileSlug || ""}
                       />
                     </div>

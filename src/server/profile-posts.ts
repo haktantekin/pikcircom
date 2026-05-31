@@ -5,6 +5,7 @@ import {
   normalizePageSize,
   slicePageFromFetched,
 } from "@/src/feedPagination";
+import { normalizePostsMediaFields } from "@/src/normalizePostMedia";
 
 export type ProfilePostRecord = Record<string, unknown> & {
   id?: string;
@@ -117,7 +118,7 @@ export async function fetchProfilePostsFromWordPress(
           : posts.length >= safeSize);
 
       return {
-        posts,
+        posts: normalizePostsMediaFields(posts),
         has_more: hasMore,
         post_count: postCount,
         page: safePage,
@@ -153,7 +154,7 @@ export async function fetchProfilePostsFromWordPress(
     postCount != null ? safePage * safeSize < postCount : undefined;
 
   return {
-    posts: items,
+    posts: normalizePostsMediaFields(items),
     has_more: wpHasMore ?? countHasMore ?? sliceHasMore,
     post_count: postCount,
     page: safePage,

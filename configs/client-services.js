@@ -62,6 +62,13 @@ export const getProfilePosts = (userName, { page, perPage } = {}) =>
     },
   });
 
+export const hydratePostsByIds = (ids) =>
+  client.get(`/api/posts/hydrate`, {
+    params: {
+      ids: Array.isArray(ids) ? ids.join(",") : ids,
+    },
+  });
+
 export const updateProfile = (payload) =>
   client.post(`/api/profile/me`, payload);
 

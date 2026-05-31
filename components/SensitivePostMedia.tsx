@@ -17,6 +17,7 @@ interface SensitivePostMediaProps {
   isSensitive?: boolean;
   variant?: SensitivePostMediaVariant;
   className?: string;
+  previewLabel?: string;
   onRevealed?: () => void;
   children: ReactNode;
 }
@@ -35,6 +36,7 @@ export default function SensitivePostMedia({
   isSensitive,
   variant = "feed",
   className = "",
+  previewLabel,
   onRevealed,
   children,
 }: SensitivePostMediaProps) {
@@ -80,6 +82,11 @@ export default function SensitivePostMedia({
       aria-label={t("sensitiveContentWarning")}
     >
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 py-6 text-center">
+        {previewLabel?.trim() ? (
+          <p className="line-clamp-2 max-w-sm text-xs font-semibold text-gray-800">
+            {previewLabel.trim()}
+          </p>
+        ) : null}
         <p className="max-w-sm text-sm font-medium text-gray-700">
           {t("sensitiveContentWarning")}
         </p>
