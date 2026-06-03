@@ -39,7 +39,7 @@ export default function FeedMasonryGrid({
   const masonryResetKey = `${resetKey}-${columnCount}`;
 
   usePrefetchPostImages(posts, {
-    variant: "thumb",
+    variant: "feed",
     resetKey: masonryResetKey,
   });
 
@@ -64,7 +64,7 @@ export default function FeedMasonryGrid({
           key={post.id}
           post={post}
           href={postDetailPath(post)}
-          imageVariant="thumb"
+          imageVariant="feed"
           sizes={imageSizes}
           showMeta={showMeta}
           roundedClassName="rounded-xl"

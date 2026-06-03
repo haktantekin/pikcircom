@@ -90,7 +90,7 @@ export default function Footer() {
 
       <footer
 
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white/95 shadow-[0_-6px_24px_-8px_rgba(33,35,38,0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-white/88"
+        className="fixed bottom-0 left-0 right-0 z-40 md:border-t-0 md:bg-transparent md:shadow-none md:backdrop-blur-none"
 
         style={{
 
@@ -100,13 +100,15 @@ export default function Footer() {
 
       >
 
-        <nav
+        <div className="w-full border-t border-gray-100 bg-white/95 shadow-[0_-6px_24px_-8px_rgba(33,35,38,0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-white/88 md:mx-auto md:max-w-[800px] md:rounded-t-2xl">
 
-          className="flex w-full items-stretch px-0.5 pt-1"
+          <nav
 
-          aria-label={t("menus")}
+            className="flex w-full items-stretch px-0.5 pt-1"
 
-        >
+            aria-label={t("menus")}
+
+          >
 
           <Link
 
@@ -290,7 +292,9 @@ export default function Footer() {
 
           )}
 
-        </nav>
+          </nav>
+
+        </div>
 
       </footer>
 

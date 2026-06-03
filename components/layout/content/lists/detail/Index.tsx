@@ -9,7 +9,7 @@ export default function ListDetail() {
   return (
     
     <>
-      <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
+      <div className="col-span-12 relative mb-4 mt-4 lg:mt-0">
         <Tabs
           defaultValue="today"
           styles={

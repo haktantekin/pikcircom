@@ -109,7 +109,7 @@ export default function ListDetailPage({ slug }: ListDetailPageProps) {
   };
 
   return (
-    <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
+    <div className="col-span-12 relative mb-4 mt-4 lg:mt-0">
       <Tabs
         value={period}
         onTabChange={(value) => setPeriod((value as ListPeriod) || "all")}

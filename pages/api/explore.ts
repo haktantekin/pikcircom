@@ -2,12 +2,7 @@ import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { setApiCacheHeaders } from "@/src/apiResponseCache";
-import {
-  FEED_PAGE_SIZE,
-  normalizePage,
-  normalizePageSize,
-  slicePageFromFetched,
-} from "@/src/feedPagination";
+import { FEED_PAGE_SIZE, normalizePage, normalizePageSize } from "@/src/feedPagination";
 
 const AUTH_COOKIE_NAME = "auth_token";
 
@@ -40,7 +35,6 @@ export default async function handler(
   const tag = typeof tagRaw === "string" ? tagRaw : undefined;
   const pageNum = normalizePage(req.query.page);
   const pageSize = normalizePageSize(req.query.per_page, FEED_PAGE_SIZE);
-  const wpFetchSize = pageNum * pageSize;
 
   try {
     const { data, status } = await axios.get(
@@ -51,7 +45,7 @@ export default async function handler(
           : undefined,
         params: {
           ...(tag ? { tag } : {}),
-          per_page: String(wpFetchSize),
+          per_page: String(pageSize),
           page: String(pageNum),
         },
       },
@@ -59,19 +53,23 @@ export default async function handler(
 
     setApiCacheHeaders(res, "explore");
 
-    const allPosts = Array.isArray(data?.posts) ? data.posts : [];
+    const posts = Array.isArray(data?.posts) ? data.posts : [];
     const wpHasMore =
       typeof data?.has_more === "boolean" ? data.has_more : undefined;
-    const { items, hasMore } = slicePageFromFetched(
-      allPosts,
-      pageNum,
-      pageSize,
-    );
+    const countHasMore =
+      typeof data?.post_count === "number"
+        ? pageNum * pageSize < data.post_count
+        : undefined;
+    const hasMore = wpHasMore ?? countHasMore ?? posts.length >= pageSize;
 
     return res.status(status).json({
       tag: data.tag ?? "",
-      posts: items,
-      has_more: wpHasMore ?? hasMore,
+      posts,
+      has_more: hasMore,
+      post_count:
+        typeof data?.post_count === "number" ? data.post_count : undefined,
+      page: pageNum,
+      per_page: pageSize,
     });
   } catch (error) {
     if (axios.isAxiosError(error)) {

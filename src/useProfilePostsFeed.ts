@@ -48,6 +48,23 @@ function sortPostsNewestFirst(posts: ProfileFeedPost[]): ProfileFeedPost[] {
   });
 }
 
+function resolveHasMore(
+  loadedCount: number,
+  totalCount: number | undefined,
+  apiHasMore: boolean | undefined,
+  batchCount: number,
+): boolean {
+  if (typeof totalCount === "number") {
+    return loadedCount < totalCount;
+  }
+
+  if (typeof apiHasMore === "boolean") {
+    return apiHasMore;
+  }
+
+  return batchCount >= FEED_GRID_PAGE_SIZE;
+}
+
 interface UseProfilePostsFeedOptions {
   userName: string;
   postCount?: number;
@@ -113,11 +130,14 @@ export function useProfilePostsFeed({
             ? response.data.post_count
             : postCount ?? merged.length;
 
-        const more =
-          response.data?.has_more === true ||
-          (total != null && merged.length < total) ||
-          (response.data?.has_more !== false &&
-            batch.length >= FEED_GRID_PAGE_SIZE);
+        const more = resolveHasMore(
+          merged.length,
+          total,
+          typeof response.data?.has_more === "boolean"
+            ? response.data.has_more
+            : undefined,
+          batch.length,
+        );
 
         setPosts(merged);
         setPage(1);
@@ -175,11 +195,14 @@ export function useProfilePostsFeed({
           ? response.data.post_count
           : postCount;
 
-      const more =
-        response.data?.has_more === true ||
-        (total != null && mergedLength < total) ||
-        (response.data?.has_more !== false &&
-          batch.length >= FEED_GRID_PAGE_SIZE);
+      const more = resolveHasMore(
+        mergedLength,
+        total,
+        typeof response.data?.has_more === "boolean"
+          ? response.data.has_more
+          : undefined,
+        batch.length,
+      );
 
       setHasMore(more);
     } catch {

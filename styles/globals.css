@@ -28,6 +28,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .app-main-with-tab-bar {
+    padding-bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 #__next {
   @apply min-h-screen w-full;
 }

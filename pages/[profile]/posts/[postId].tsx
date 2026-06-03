@@ -1,4 +1,3 @@
-import ContentLeft from "@/components/layout/content/ContentLeft";
 import { resolvePostAuthorProfileImage } from "@/src/avatarUrl";
 import { pickPostImageUrl } from "@/src/postImageUrl";
 import PostItem from "@/components/layout/content/post/PostItem";
@@ -125,11 +124,10 @@ export default function PostDetail() {
         />
       </Head>
       <Header user={profile} />
-      <main className="h-auto pb-10 lg:pb-0">
+      <main className="h-auto app-main-with-tab-bar">
         <div className="container lg:mt-3">
           <div className="grid grid-cols-12 gap-4">
-            <ContentLeft />
-            <div className="col-span-12 lg:col-span-10 relative mb-4 mt-4 lg:mt-0">
+            <div className="col-span-12 relative mb-4 mt-4 lg:mt-0">
               <div
                 className="w-full bg-white rounded mb-4 text-sm text-center min-h-[40px] flex justify-center items-center relative mt-3"
                 style={{
