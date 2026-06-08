@@ -61,12 +61,16 @@ export default function PostComposer({
 
   const isInline = variant === "inline";
 
-  const { dropZoneProps: modalDropZoneProps } = useComposerImageDrop({
+  const {
+    isDragActive: modalIsDragActive,
+    dropZoneProps: modalDropZoneProps,
+  } = useComposerImageDrop({
     onFile: setFile,
     onInvalidFile: () => alert(t("composeDropInvalid")),
     disabled: isSubmitting || isInline,
     globalPaste: !isInline,
   });
+  const isDragActive = modalIsDragActive;
 
   useEffect(() => {
     if (fixedList?.id) {
@@ -248,7 +252,9 @@ export default function PostComposer({
   return (
     <div
       data-composer-dropzone
-      className="flex w-full max-w-full flex-col items-center"
+      className={`flex w-full max-w-full flex-col items-stretch rounded-2xl border border-gray-200/80 bg-white p-3 shadow-card sm:p-4 ${
+        isDragActive ? "border-58b4d1 ring-2 ring-58b4d1/30" : ""
+      }`}
       {...modalDropZoneProps}
     >
       <input
@@ -260,50 +266,73 @@ export default function PostComposer({
         aria-hidden
         onChange={onModalFileChange}
       />
-      {file && (
-        <div className="relative w-full">
-          <div className="absolute left-2 top-2 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-58b4d1 text-white">
-            <button type="button" onClick={clearFile} className="leading-0">
-              <span className="relative -top-px text-white">&times;</span>
-            </button>
-          </div>
-          <Image
-            className="max-h-[320px] max-w-full object-cover"
-            width={300}
-            height={200}
-            src={previewUrl || "/profile.jpg"}
-            alt=""
-            unoptimized
-          />
+
+      {isDragActive ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-2xl border-2 border-dashed border-58b4d1 bg-58b4d1/10"
+          aria-live="polite"
+        >
+          <span className="rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-58b4d1 shadow-sm">
+            {t("composeDropOverlay")}
+          </span>
         </div>
-      )}
-      {!file && (
-        <div className="w-full py-2 text-center">
-          <p className="mb-3 text-sm text-58b4d1">{t("uploadTitle")}</p>
+      ) : null}
+
+      {file ? (
+        // === Paket A: iki sütunlu düzen ===
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.1fr_1fr]">
+          {/* SOL — görsel */}
+          <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
+            <button
+              type="button"
+              onClick={clearFile}
+              disabled={isSubmitting}
+              className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-500 shadow-md transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-60"
+              aria-label={t("hide")}
+            >
+              <IconX size={18} stroke={2} />
+            </button>
+            <Image
+              className="max-h-[min(360px,55vh)] w-full object-cover"
+              width={600}
+              height={400}
+              src={previewUrl || "/profile.jpg"}
+              alt=""
+              unoptimized
+            />
+          </div>
+
+          {/* SAĞ — form */}
+          <div className="flex min-w-0 flex-col gap-3">
+            <TagsInput
+              description={description}
+              onDescriptionChange={setDescription}
+              tags={tags}
+              onTagsChange={setTags}
+              collectionIds={collectionIds}
+              onCollectionIdsChange={setCollectionIds}
+              listIds={listIds}
+              onListIdsChange={setListIds}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
+              lockedList={fixedList}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="w-full py-6 text-center">
+          <p className="mb-3 text-sm font-medium text-58b4d1">
+            {t("uploadTitle")}
+          </p>
           <button
             type="button"
             onClick={openModalFilePicker}
-            className="mx-auto flex rounded border border-58b4d1 px-4 py-2 text-58b4d1 transition-colors hover:bg-58b4d1 hover:text-white"
+            className="mx-auto flex items-center gap-2 rounded-full border border-58b4d1 px-5 py-2 text-sm font-semibold text-58b4d1 transition-colors hover:bg-58b4d1 hover:text-white"
           >
-            <IconPhoto size={22} />
+            <IconPhoto size={20} stroke={1.5} />
+            <span>{t("loadPikcir")}</span>
           </button>
-        </div>
-      )}
-      {file && (
-        <div className="mt-4 flex w-full max-w-[700px] flex-col gap-4">
-          <TagsInput
-            description={description}
-            onDescriptionChange={setDescription}
-            tags={tags}
-            onTagsChange={setTags}
-            collectionIds={collectionIds}
-            onCollectionIdsChange={setCollectionIds}
-            listIds={listIds}
-            onListIdsChange={setListIds}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-            lockedList={fixedList}
-          />
+          <p className="mt-2 text-xs text-gray-400">{t("composeDropOverlay")}</p>
         </div>
       )}
     </div>

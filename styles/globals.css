@@ -7,7 +7,7 @@
   }
 
   body {
-    @apply min-h-screen bg-gradient-to-b from-[#fafafa] via-f5f3f4 to-[#eeeff1] bg-fixed font-pt text-202124 antialiased;
+    @apply min-h-screen bg-fixed font-pt text-202124 antialiased;
   }
 
   input,

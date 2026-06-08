@@ -1,5 +1,10 @@
 import PostComposer from "./PostComposer";
 
-export default function CreatePost() {
-  return <PostComposer variant="inline" />;
+interface CreatePostProps {
+  /** true = mobil görünümünde de gizlenme, kart tam gösterilsin */
+  showOnMobile?: boolean;
+}
+
+export default function CreatePost({ showOnMobile = true }: CreatePostProps) {
+  return <PostComposer variant="inline" showOnMobile={showOnMobile} />;
 }

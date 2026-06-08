@@ -93,7 +93,7 @@ export default function Header({user}: HeaderProps) {
           <div className="col-span-12 lg:col-span-2">
             <Link href="/" className="flex h-full items-center justify-center gap-2">
               <Image src="/logo.png" alt="Pickup" width={32} height={40} className="w-[32px] h-[40px]" priority></Image>
-              <div className="text-sm font-bold text-58b4d1 flex justify-center items-center">
+              <div className="hidden text-sm font-bold text-58b4d1 flex justify-center items-center">
                 <IconLetterP size={20} stroke={2.0} />
                 <IconLetterI size={15} className="-ml-[6px]" stroke={2.0} />
                 <IconLetterK size={15} className="-ml-[2px]" stroke={2.0} />

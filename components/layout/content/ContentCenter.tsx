@@ -66,7 +66,7 @@ export default function ContentCenter({ type, feedReadOnly = false }: ContentCen
       <div className="col-span-12 relative mb-4 mt-4 lg:mt-0">
         {type === "home" ? (
           <>
-            {!feedReadOnly ? <CreatePost /> : null}
+            {!feedReadOnly ? <CreatePost showOnMobile={true} /> : null}
             <HomeTagBar
               hiddenSlugs={hiddenHomeTagSlugs}
               onToggleTagVisibility={handleToggleHomeTagVisibility}

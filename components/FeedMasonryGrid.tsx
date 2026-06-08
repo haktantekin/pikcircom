@@ -58,7 +58,7 @@ export default function FeedMasonryGrid({
   return (
     <MasonryPostGrid
       columns={columns}
-      gapClassName="gap-2 sm:gap-3"
+      gapClassName="gap-3 sm:gap-4"
       renderItem={(post) => (
         <MasonryPostCard
           key={post.id}

@@ -30,6 +30,8 @@ interface PostComposerInlineProps {
   onSubmit: () => void;
 }
 
+const DESCRIPTION_MAX = 160;
+
 export default function PostComposerInline({
   showOnMobile = false,
   avatarUrl,
@@ -76,11 +78,15 @@ export default function PostComposerInline({
     event.target.value = "";
   };
 
+  const descriptionLength = description.length;
+  const descriptionOver = descriptionLength > DESCRIPTION_MAX;
+  const remaining = Math.max(0, DESCRIPTION_MAX - descriptionLength);
+
   return (
     <section
       data-composer-dropzone
-      className={`relative mb-4 overflow-hidden rounded-2xl border border-gray-200/80 bg-white ${showOnMobile ? "block" : "hidden lg:block"} ${
-        isDragActive ? "border-58b4d1 ring-2 ring-58b4d1/20" : ""
+      className={`relative mb-4 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-card ${showOnMobile ? "block" : "hidden lg:block"} ${
+        isDragActive ? "border-58b4d1 ring-2 ring-58b4d1/30" : ""
       }`}
       {...dropZoneProps}
     >
@@ -123,28 +129,30 @@ export default function PostComposerInline({
               type="button"
               onClick={openFilePicker}
               disabled={isSubmitting}
-              className="block w-full rounded-lg py-2.5 text-left text-lg leading-snug text-gray-500 transition-colors hover:text-58b4d1 disabled:opacity-60"
+              className="group block w-full rounded-xl border border-dashed border-gray-300 bg-gray-50/60 px-4 py-3 text-left text-base leading-snug text-gray-500 transition-colors hover:border-58b4d1 hover:bg-58b4d1/5 hover:text-58b4d1 disabled:opacity-60"
             >
-              {t("composePlaceholder")}
+              <span className="flex items-center gap-2">
+                <IconPhoto
+                  size={18}
+                  stroke={1.5}
+                  className="text-gray-400 group-hover:text-58b4d1"
+                />
+                <span>{t("composePlaceholder")}</span>
+              </span>
+              <span className="mt-1 block text-xs text-gray-400 group-hover:text-58b4d1/80">
+                {t("composeDropOverlay")}
+              </span>
             </button>
           ) : (
-            <div className="space-y-3">
-              <textarea
-                value={description}
-                onChange={(event) => onDescriptionChange(event.target.value)}
-                placeholder={t("enterDescription")}
-                maxLength={80}
-                rows={2}
-                disabled={isSubmitting}
-                className="w-full resize-none border-0 bg-transparent p-0 text-base leading-relaxed text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0"
-              />
-
-              <div className="relative overflow-hidden rounded-2xl border border-gray-100">
+            // === Paket A: dosya seçildikten sonra iki sütunlu düzen ===
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.1fr_1fr]">
+              {/* SOL — görsel önizleme */}
+              <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
                 <button
                   type="button"
                   onClick={onClearFile}
                   disabled={isSubmitting}
-                  className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/65 text-white transition hover:bg-black/80 disabled:opacity-60"
+                  className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-500 shadow-md transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-60"
                   aria-label={t("hide")}
                 >
                   <IconX size={18} stroke={2} />
@@ -154,56 +162,118 @@ export default function PostComposerInline({
                   alt=""
                   width={600}
                   height={400}
-                  className="max-h-[min(320px,50vh)] w-full object-cover"
+                  className="max-h-[min(360px,55vh)] w-full object-cover"
                   unoptimized
                 />
               </div>
 
-              <TagsInput
-                description={description}
-                onDescriptionChange={onDescriptionChange}
-                tags={tags}
-                onTagsChange={onTagsChange}
-                collectionIds={collectionIds}
-                onCollectionIdsChange={onCollectionIdsChange}
-                listIds={listIds}
-                onListIdsChange={onListIdsChange}
-                onSubmit={onSubmit}
-                isSubmitting={isSubmitting}
-                compact
-                hideSubmit
-                hideDescription
-                lockedList={fixedList}
-              />
+              {/* SAĞ — form alanları */}
+              <div className="flex min-w-0 flex-col gap-3">
+                <div>
+                  <div className="relative">
+                    <textarea
+                      value={description}
+                      onChange={(event) =>
+                        onDescriptionChange(
+                          event.target.value.slice(0, DESCRIPTION_MAX),
+                        )
+                      }
+                      placeholder={t("enterDescription")}
+                      maxLength={DESCRIPTION_MAX}
+                      rows={2}
+                      disabled={isSubmitting}
+                      className={`peer w-full resize-none rounded-lg border bg-white px-3 pb-6 pt-2 text-[15px] leading-relaxed text-gray-900 placeholder:text-gray-400 focus:border-58b4d1 focus:outline-none focus:ring-2 focus:ring-58b4d1/30 disabled:opacity-60 ${
+                        descriptionOver
+                          ? "border-red-300"
+                          : "border-gray-200"
+                      }`}
+                    />
+                    {/* Sayaç + uyarı: textarea'nın sağ alt köşesine içeri yerleştirilir,
+                        ayrı satır kaplamaz. Sadece hover/focus'ta görünür ki yazarken
+                        göz önünde olsun. */}
+                    <div
+                      className={`pointer-events-none absolute bottom-1.5 right-2 flex items-center gap-2 text-[10px] transition-opacity ${
+                        descriptionOver || remaining <= 10
+                          ? "opacity-100"
+                          : "opacity-0 peer-hover:opacity-100 peer-focus:opacity-100"
+                      }`}
+                    >
+                      {descriptionOver ? (
+                        <span className="font-semibold text-red-500">
+                          {t("charLimitHint", { count: DESCRIPTION_MAX })}
+                        </span>
+                      ) : null}
+                      <span
+                        className={
+                          descriptionOver
+                            ? "font-semibold text-red-500"
+                            : remaining <= 10
+                              ? "text-orange-500"
+                              : "text-gray-400"
+                        }
+                      >
+                        {descriptionLength}/{DESCRIPTION_MAX}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <TagsInput
+                  description={description}
+                  onDescriptionChange={onDescriptionChange}
+                  tags={tags}
+                  onTagsChange={onTagsChange}
+                  collectionIds={collectionIds}
+                  onCollectionIdsChange={onCollectionIdsChange}
+                  listIds={listIds}
+                  onListIdsChange={onListIdsChange}
+                  onSubmit={onSubmit}
+                  isSubmitting={isSubmitting}
+                  compact
+                  hideSubmit
+                  hideDescription
+                  lockedList={fixedList}
+                />
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-gray-100 px-3 py-2 sm:px-4">
-        <button
-          type="button"
-          onClick={openFilePicker}
-          disabled={isSubmitting}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-58b4d1 transition-colors hover:bg-58b4d1/10 disabled:opacity-50"
-          aria-label={t("uploadTitle")}
-        >
-          <IconPhoto size={22} stroke={1.5} />
-        </button>
-
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={!canShare}
-          className={`rounded-full px-5 py-1.5 text-sm font-bold text-white transition-colors ${
-            canShare
-              ? "bg-58b4d1 hover:bg-[#4aa3c4]"
-              : "pointer-events-none bg-58b4d1/40"
-          }`}
-        >
-          {isSubmitting ? "..." : t("share")}
-        </button>
-      </div>
+      {/* Footer: dosya seçildikten sonra sadece Paylaş, tek satır */}
+      {file ? (
+        <div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50/50 px-3 py-2 sm:px-4">
+          <button
+            type="button"
+            onClick={openFilePicker}
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-58b4d1 transition-colors hover:bg-58b4d1/10 disabled:opacity-50"
+            aria-label={t("uploadTitle")}
+          >
+            <IconPhoto size={16} stroke={1.5} />
+            <span className="hidden sm:inline">{t("loadPikcir")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={!canShare}
+            className={`flex-1 rounded-full px-5 py-2 text-sm font-bold transition-colors sm:flex-none sm:min-w-[140px] ${
+              canShare
+                ? "bg-58b4d1 text-white hover:bg-[#4aa3c4] active:scale-[0.98]"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            {isSubmitting ? (
+              <span className="inline-flex items-center justify-center gap-2">
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                {t("feedLoadingMore")}
+              </span>
+            ) : (
+              t("share")
+            )}
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -201,14 +201,16 @@ export default function TagsInput({
               : "border-gray-300 border rounded"
           }
           placeholder={t("enterDescription")}
-          maxLength={80}
+          maxLength={160}
           minRows={compact ? 2 : undefined}
           autosize={compact}
           value={description ?? ""}
-          onChange={(event) => onDescriptionChange?.(event.currentTarget.value)}
+          onChange={(event) =>
+            onDescriptionChange?.(event.currentTarget.value.slice(0, 160))
+          }
           rightSection={
             compact ? undefined : (
-              <Tooltip label={t("char80")} position="top-end" withArrow>
+              <Tooltip label={t("char160")} position="top-end" withArrow>
                 <div>
                   <IconAlertCircle size="1rem" style={{ display: "block", opacity: 0.5 }} />
                 </div>

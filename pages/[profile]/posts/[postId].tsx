@@ -3,18 +3,28 @@ import { pickPostImageUrl } from "@/src/postImageUrl";
 import PostItem from "@/components/layout/content/post/PostItem";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
-import { getPostById, getProfileByUserName } from "@/configs/client-services";
+import FeedMasonryGrid from "@/components/FeedMasonryGrid";
+import {
+  getPostById,
+  getProfileByUserName,
+  getProfilePosts,
+} from "@/configs/client-services";
 import {
   findPostInProfilePayload,
   normalizeApiPostPayload,
   type PostDetailShape,
 } from "@/src/postDetailHelpers";
+import { explorePostToMasonryCard } from "@/src/feedMasonryHelpers";
+import { type MasonryPostCardData } from "@/components/MasonryPostCard";
+import { prepareExplorePosts, type ExplorePost } from "@/src/feedPostTypes";
+
 import { IconArrowNarrowLeft } from "@tabler/icons-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useGuestFeedReadOnly } from "@/src/useGuestFeedReadOnly";
+
 
 interface ProfileData {
   userName?: string;
@@ -35,6 +45,10 @@ export default function PostDetail() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  // Yazarın diğer postları (mevcut post hariç). İlk sayfa gerekli.
+  const [relatedPosts, setRelatedPosts] = useState<ExplorePost[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
+
 
   const profileSlug =
     typeof router.query.profile === "string" ? router.query.profile : null;
@@ -92,6 +106,39 @@ export default function PostDetail() {
       isCancelled = true;
     };
   }, [profileSlug, postId, router.isReady]);
+
+  // Yazarın diğer postlarını sayfa altında listele. Mevcut post hariç tutulur.
+  useEffect(() => {
+    if (!router.isReady || !post || !post.userName) {
+      return;
+    }
+    const author = post.userName;
+    let cancelled = false;
+    setRelatedLoading(true);
+    getProfilePosts(author, { page: 1, perPage: 18 })
+      .then((res) => {
+        if (cancelled) return;
+        const raw = (res?.data?.posts ?? []) as ExplorePost[];
+        const dedup = raw.filter(
+          (p) => String(p?.id ?? "") !== String(post.id ?? ""),
+        );
+        setRelatedPosts(prepareExplorePosts(dedup));
+      })
+      .catch(() => {
+        if (!cancelled) setRelatedPosts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setRelatedLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [post, router.isReady]);
+
+  const relatedCards = useMemo<MasonryPostCardData[]>(
+    () => relatedPosts.map(explorePostToMasonryCard),
+    [relatedPosts],
+  );
 
   const handleGoBack = useCallback(() => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -188,6 +235,32 @@ export default function PostDetail() {
                   }}
                 />
               )}
+
+              {/* Yazarın diğer postları — masonry grid */}
+              {(relatedLoading || relatedCards.length > 0) ? (
+                <section className="mt-6">
+                  <h2 className="mb-3 text-sm font-bold text-202124">
+                    @{post?.userName || profileSlug} · {t("moreFromAuthor")}
+                  </h2>
+                  {relatedLoading && relatedCards.length === 0 ? (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
+                      {[0, 1, 2, 3, 4, 5].map((i) => (
+                        <div
+                          key={`skeleton-${i}`}
+                          className="h-40 w-full animate-pulse rounded-xl bg-gray-100"
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <FeedMasonryGrid
+                      posts={relatedCards}
+                      resetKey={`related-${post?.id ?? "x"}`}
+                      showMeta
+                      imageSizes="(max-width: 1024px) 50vw, 25vw"
+                    />
+                  )}
+                </section>
+              ) : null}
             </div>
           </div>
         </div>
