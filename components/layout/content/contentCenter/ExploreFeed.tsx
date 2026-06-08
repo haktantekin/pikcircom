@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import FeedMasonryGrid from "@/components/FeedMasonryGrid";
 import Skeleton from "@/components/Skeleton";
 import FeedLoadMoreSentinel from "@/components/FeedLoadMoreSentinel";
@@ -14,6 +14,12 @@ export type { ExplorePost };
 interface ExploreFeedProps {
   selectedTag?: string;
   readOnly?: boolean;
+  /**
+   * Ana sayfadaki etiket barında kullanıcının gizlediği etiket slug'ları.
+   * Bu slug'lardan birini taşıyan gönderiler feed'de gösterilmez.
+   * Boş array veya tanımsız = filtre uygulanmaz.
+   */
+  hiddenSlugs?: string[];
 }
 
 function postFallbackKey(post: ExplorePost): string {
@@ -56,6 +62,7 @@ function appendUniquePosts(
 export default function ExploreFeed({
   selectedTag = "",
   readOnly = false,
+  hiddenSlugs = [],
 }: ExploreFeedProps) {
   const { t } = useTranslation();
   const [posts, setPosts] = useState<ExplorePost[]>([]);
@@ -66,6 +73,35 @@ export default function ExploreFeed({
   const [error, setError] = useState("");
 
   const tagKey = selectedTag || "";
+
+  // Gizli etiket slug'larını Set'e çevir (lookup performansı).
+  const hiddenSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const slug of hiddenSlugs ?? []) {
+      if (typeof slug === "string" && slug.trim()) {
+        set.add(slug.trim());
+      }
+    }
+    return set;
+  }, [hiddenSlugs]);
+
+  // hiddenSet'e göre postları client-side filtrele. Liste, server'dan gelen ham
+  // listenin bir türevidir; kullanıcı bir etiketi gizlediğinde / gösterdiğinde
+  // sayfa yenilenmeden anlık olarak feed'den çıkar / geri gelir.
+  const visiblePosts = useMemo(() => {
+    if (hiddenSet.size === 0) {
+      return posts;
+    }
+    return posts.filter((post) => {
+      const tags = post.tags ?? [];
+      for (const tag of tags) {
+        if (tag && typeof tag.slug === "string" && hiddenSet.has(tag.slug)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [posts, hiddenSet]);
 
   useEffect(() => {
     let cancelled = false;
@@ -165,10 +201,15 @@ export default function ExploreFeed({
     );
   }
 
-  if (posts.length === 0) {
+  if (visiblePosts.length === 0) {
+    const hasHiddenFilter = hiddenSet.size > 0;
     return (
       <section className="mb-4 w-full rounded-xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-500 shadow-card">
-        {selectedTag ? t("exploreTagEmpty") : t("exploreEmpty")}
+        {hasHiddenFilter
+          ? t("exploreHiddenAllEmpty")
+          : selectedTag
+            ? t("exploreTagEmpty")
+            : t("exploreEmpty")}
       </section>
     );
   }
@@ -176,8 +217,8 @@ export default function ExploreFeed({
   return (
     <>
       <FeedMasonryGrid
-        posts={posts.map(explorePostToMasonryCard)}
-        resetKey={tagKey}
+        posts={visiblePosts.map(explorePostToMasonryCard)}
+        resetKey={`${tagKey}|${hiddenSlugs.join(",")}`}
       />
       <FeedLoadMoreSentinel
         sentinelRef={sentinelRef}

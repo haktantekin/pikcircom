@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Palanquin+Dark:wght@600&display=swap');
 
 @tailwind base;
 
@@ -63,6 +62,25 @@
 }
 .chip-item label span{
   @apply text-58b4d1
+}
+
+/* Ana sayfa etiket barı: ince ve görünür yatay scrollbar */
+.home-tag-bar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.home-tag-bar::-webkit-scrollbar {
+  height: 6px;
+}
+.home-tag-bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.home-tag-bar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}
+.home-tag-bar::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
 .home-left [data-hovered]{
   @apply !bg-transparent
