@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { prepareExplorePosts, type ExplorePost } from "@/src/feedPostTypes";
 import { FEED_PAGE_SIZE } from "@/src/feedPagination";
 import { useInfiniteScroll } from "@/src/useInfiniteScroll";
+import { subscribePostCreated } from "@/src/postCreatedEvent";
 
 export type { ExplorePost };
 
@@ -184,6 +185,38 @@ export default function ExploreFeed({
     isLoadingMore,
     disabled: isLoading || Boolean(error),
   });
+
+  /**
+   * Yeni oluşturulan postu feed'in başına anında ekle.
+   * - `selectedTag` varsa: yeni post o etiketi taşımıyorsa feed'e sokma (filtre bütünlüğü).
+   * - Aynı id'ye sahip post zaten varsa: yenisi ile değiştir (dedupe).
+   * - `hiddenSlugs` filtresine dokunma; `visiblePosts` `useMemo`'su bunu zaten yönetiyor,
+   *   kullanıcı etiketi geri açtığında post tekrar görünsün.
+   */
+  useEffect(() => {
+    return subscribePostCreated((detail) => {
+      const newPost = detail?.post;
+      if (!newPost || !newPost.id) {
+        return;
+      }
+      if (tagKey) {
+        const slug = tagKey.trim().toLowerCase();
+        const matches = (newPost.tags ?? []).some(
+          (tag) => typeof tag?.slug === "string" && tag.slug.toLowerCase() === slug,
+        );
+        if (!matches) {
+          return;
+        }
+      }
+      setPosts((prev) => {
+        const filtered = prev.filter(
+          (p) => String(p.id) !== String(newPost.id),
+        );
+        return [newPost, ...filtered];
+      });
+      setHasMore(true);
+    });
+  }, [tagKey]);
 
   if (isLoading) {
     return (

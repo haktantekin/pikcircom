@@ -2,10 +2,11 @@ import { Textarea, Tooltip, MultiSelect, Loader } from "@mantine/core";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { IconAlertCircle } from "@tabler/icons-react";
-import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
+import { useEffect, useMemo, useState, type ComponentPropsWithoutRef } from "react";
 import { getCollections, getLists, getTags } from "@/configs/client-services";
 import { profileCollectionsPath } from "@/src/profilePaths";
 import { fetchAuthProfile } from "@/src/fetchAuthProfile";
+import { sortTagsByPostCountDesc } from "@/src/sortTags";
 import TagOptionRow from "./TagOptionRow";
 
 interface TagsInputProps {
@@ -184,6 +185,18 @@ export default function TagsInput({
     updateListIds([lockedList.id]);
   }, [lockedList?.id]);
 
+  // Dropdown sırası: postCount varsa ona göre azalan, yoksa alfabetik (TR).
+  const sortedTagOptions = useMemo(
+    () =>
+      sortTagsByPostCountDesc(
+        tagOptions.map((option) => ({
+          ...option,
+          postCount: undefined as number | undefined,
+        })),
+      ),
+    [tagOptions],
+  );
+
   const canSubmit = tagData.length > 0 && !isSubmitting;
 
   const rootClass = compact
@@ -225,11 +238,11 @@ export default function TagsInput({
           <div className="flex justify-center py-2">
             <Loader size="sm" />
           </div>
-        ) : tagOptions.length === 0 ? (
+        ) : sortedTagOptions.length === 0 ? (
           <p className="text-sm text-gray-500 py-2">{t("tagsCatalogEmpty")}</p>
         ) : (
           <MultiSelect
-            data={tagOptions}
+            data={sortedTagOptions}
             itemComponent={TagSelectItem}
             label={compact ? undefined : t("tags")}
             placeholder={t("selectTagsPlaceholder")}

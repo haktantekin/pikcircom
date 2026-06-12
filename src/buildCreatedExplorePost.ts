@@ -10,10 +10,8 @@ export function buildCreatedExplorePost(options: {
   profile: AuthProfileData;
   description: string;
   tagNames: string[];
-  previewImageUrl: string | null;
 }): ExplorePost {
-  const { postId, apiPost, profile, description, tagNames, previewImageUrl } =
-    options;
+  const { postId, apiPost, profile, description, tagNames } = options;
   const normalized = normalizeApiPostPayload(apiPost ?? { id: postId });
   const userName =
     (typeof profile.userName === "string" ? profile.userName : "") ||
@@ -36,7 +34,7 @@ export function buildCreatedExplorePost(options: {
     subject: normalized?.subject ?? description,
     userName,
     createDate: normalized?.createDate ?? new Date().toISOString(),
-    image: normalized?.image ?? previewImageUrl ?? undefined,
+    image: normalized?.image,
     imageUrls: normalized?.imageUrls,
     profileImage,
     commentCount: normalized?.commentCount ?? 0,

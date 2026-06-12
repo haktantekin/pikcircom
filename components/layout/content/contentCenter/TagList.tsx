@@ -1,8 +1,9 @@
 import { Spoiler, Loader } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getTags } from "@/configs/client-services";
 import TagOptionRow from "./TagOptionRow";
+import { sortTagsByPostCountDesc } from "@/src/sortTags";
 
 export interface ExploreTagItem {
   slug: string;
@@ -35,6 +36,12 @@ export default function TagList({
   const [tags, setTags] = useState<ExploreTagItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isGrid = layout === "grid";
+
+  // Post sayısına göre azalan, eşitlikte Türkçe alfabetik sırala.
+  const sortedTags = useMemo(
+    () => sortTagsByPostCountDesc(tags),
+    [tags],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -131,22 +138,22 @@ export default function TagList({
           </div>
         )}
 
-        {!isLoading && tags.length === 0 && (
+        {!isLoading && sortedTags.length === 0 && (
           <p className="py-4 text-center text-sm text-gray-500">{t("exploreTagsEmpty")}</p>
         )}
 
-        {!isLoading && tags.length > 0 && isGrid && (
+        {!isLoading && sortedTags.length > 0 && isGrid && (
           <ul className="grid grid-cols-2 gap-2 sm:gap-3">
             {showAllTagsButton ? (
               <li className="col-span-2">{renderAllTagsButton()}</li>
             ) : null}
-            {tags.map((tag) => (
+            {sortedTags.map((tag) => (
               <li key={tag.slug}>{renderTagButton(tag)}</li>
             ))}
           </ul>
         )}
 
-        {!isLoading && tags.length > 0 && !isGrid && (
+        {!isLoading && sortedTags.length > 0 && !isGrid && (
           <Spoiler
             maxHeight={220}
             showLabel={t("showAll")}
@@ -155,7 +162,7 @@ export default function TagList({
           >
             <ul className="flex flex-col gap-1">
               {showAllTagsButton ? <li>{renderAllTagsButton()}</li> : null}
-              {tags.map((tag) => (
+              {sortedTags.map((tag) => (
                 <li key={tag.slug}>{renderTagButton(tag)}</li>
               ))}
             </ul>

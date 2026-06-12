@@ -2,22 +2,8 @@ import { Loader } from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getTags } from "@/configs/client-services";
+import { sortTagsByPostCountDesc } from "@/src/sortTags";
 import type { ExploreTagItem } from "./TagList";
-
-/**
- * Etiketleri önce post sayısına göre azalan, eşitlikte alfabetik (Türkçe) sırala.
- */
-function sortTags(items: ExploreTagItem[]): ExploreTagItem[] {
-  return [...items].sort((a, b) => {
-    const countDiff = (b.postCount ?? 0) - (a.postCount ?? 0);
-    if (countDiff !== 0) {
-      return countDiff;
-    }
-    return (a.name ?? "").localeCompare(b.name ?? "", "tr", {
-      sensitivity: "base",
-    });
-  });
-}
 
 interface HomeTagBarProps {
   /** Kullanıcının gizlediği etiket slug'ları. Boş array = hepsi görünür. */
@@ -40,7 +26,7 @@ export default function HomeTagBar({
   const [tags, setTags] = useState<ExploreTagItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const sortedTags = useMemo(() => sortTags(tags), [tags]);
+  const sortedTags = useMemo(() => sortTagsByPostCountDesc(tags), [tags]);
 
   // Gizli etiketler de listede görünmeye devam eder; sadece görsel olarak pasif
   // (gri border + soluk yazı) olur. Listeden tamamen çıkarılmaz.

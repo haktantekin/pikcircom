@@ -185,7 +185,6 @@ export default function PostComposer({
         profile: profileRes.data!,
         description,
         tagNames: tags,
-        previewImageUrl: previewUrl,
       });
       dispatchPostCreated({ postId: payload.id, post: explorePost });
       clearFile();
