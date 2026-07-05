@@ -24,6 +24,59 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useGuestFeedReadOnly } from "@/src/useGuestFeedReadOnly";
+import type { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import axios from "axios";
+import { extractPostFromApiPayload } from "@/src/normalizePostMedia";
+
+interface SsrPostMeta {
+  subject?: string;
+  userName?: string;
+  image?: string;
+  description?: string;
+}
+
+export const getServerSideProps: GetServerSideProps<{
+  ssrMeta: SsrPostMeta | null;
+}> = async (ctx) => {
+  const profileSlug = typeof ctx.params?.profile === "string" ? ctx.params.profile : "";
+  const postId = typeof ctx.params?.postId === "string" ? ctx.params.postId : "";
+
+  if (!profileSlug || !postId) {
+    return { props: { ssrMeta: null } };
+  }
+
+  const wordPressBaseUrl = (
+    process.env.WORDPRESS_API_URL ?? process.env.NEXT_PUBLIC_WORDPRESS_API_URL ?? ""
+  ).replace(/\/$/, "");
+
+  if (!wordPressBaseUrl) {
+    return { props: { ssrMeta: null } };
+  }
+
+  try {
+    const { data } = await axios.get(
+      `${wordPressBaseUrl}/wp-json/pikcir/v1/posts/${encodeURIComponent(postId)}`,
+      { headers: { "Content-Type": "application/json" }, timeout: 5000 },
+    );
+
+    const post = extractPostFromApiPayload(data);
+    const subject = post?.subject ?? (typeof data?.post?.subject === "string" ? data.post.subject : undefined);
+    const image = post?.image ?? post?.imageUrls?.large ?? post?.imageUrls?.medium ?? undefined;
+
+    return {
+      props: {
+        ssrMeta: {
+          subject: subject ?? null,
+          userName: profileSlug,
+          image: image ?? null,
+          description: subject ? `${subject} - @${profileSlug} tarafından paylaşıldı` : null,
+        } as SsrPostMeta,
+      },
+    };
+  } catch {
+    return { props: { ssrMeta: null } };
+  }
+};
 
 
 interface ProfileData {
@@ -37,7 +90,7 @@ interface ProfileData {
   collections?: Array<{ posts?: Array<Record<string, unknown>> }>;
 }
 
-export default function PostDetail() {
+export default function PostDetail({ ssrMeta }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter();
   const { t } = useTranslation();
   const { feedReadOnly } = useGuestFeedReadOnly();
@@ -162,13 +215,39 @@ export default function PostDetail() {
         <title>
           {post?.subject
             ? `${post.subject} - @${profileSlug} / Pikcir`
-            : `Post / Pikcir`}
+            : ssrMeta?.subject
+              ? `${ssrMeta.subject} - @${ssrMeta.userName} / Pikcir`
+              : `Post / Pikcir`}
         </title>
         <meta
-          id="meta-description"
           name="description"
-          content="Kafanın içinde biri var ve sürekli espri yapıyorsa bize katıl. Resmini al gel, koleksiyonlar oluştur, eğlen!"
+          content={
+            post?.subject
+              ? `${post.subject} - @${profileSlug} tarafından paylaşıldı`
+              : ssrMeta?.description ?? "Kafanın içinde biri var ve sürekli espri yapıyorsa bize katıl. Resmini al gel, koleksiyonlar oluştur, eğlen!"
+          }
         />
+        <meta property="og:title" content={post?.subject ?? ssrMeta?.subject ?? "Pikcir"} />
+        <meta
+          property="og:description"
+          content={
+            post?.subject
+              ? `${post.subject} - @${profileSlug} tarafından paylaşıldı`
+              : ssrMeta?.description ?? "Pikcir - Resmini al gel!"
+          }
+        />
+        {(post?.image || post?.imageUrls?.large || ssrMeta?.image) && (
+          <meta
+            property="og:image"
+            content={
+              pickPostImageUrl(post?.image, post?.imageUrls, "large") ||
+              ssrMeta?.image ||
+              ""
+            }
+          />
+        )}
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
       </Head>
       <Header user={profile} />
       <main className="h-auto app-main-with-tab-bar">

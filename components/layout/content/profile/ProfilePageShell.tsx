@@ -79,9 +79,15 @@ export interface ProfilePageUser {
 
 interface ProfilePageShellProps {
   activeTab: ProfileTab;
+  ssrMeta?: {
+    displayName?: string;
+    userName?: string;
+    userDescription?: string;
+    avatarUrl?: string;
+  } | null;
 }
 
-export default function ProfilePageShell({ activeTab }: ProfilePageShellProps) {
+export default function ProfilePageShell({ activeTab, ssrMeta }: ProfilePageShellProps) {
   const router = useRouter();
   const { feedReadOnly } = useGuestFeedReadOnly();
   const [user, setUser] = useState<ProfilePageUser>();
@@ -157,13 +163,27 @@ export default function ProfilePageShell({ activeTab }: ProfilePageShellProps) {
         <title>
           {noUser === 1
             ? `${(user?.displayName || user?.firstName || user?.userName || "").toLocaleLowerCase()}- (@${user?.userName}) / Pikcir`
-            : "Profil / Pikcir"}
+            : ssrMeta?.displayName
+              ? `${ssrMeta.displayName.toLocaleLowerCase()} (@${ssrMeta.userName}) / Pikcir`
+              : "Profil / Pikcir"}
         </title>
         <meta
-          id="meta-description"
           name="description"
-          content="Kafanın içinde biri var ve sürekli espri yapıyorsa bize katıl. Resmini al gel, koleksiyonlar oluştur, eğlen!"
+          content={
+            user?.userDescription || ssrMeta?.userDescription ||
+            "Kafanın içinde biri var ve sürekli espri yapıyorsa bize katıl. Resmini al gel, koleksiyonlar oluştur, eğlen!"
+          }
         />
+        <meta property="og:title" content={
+          user?.displayName || user?.userName || ssrMeta?.displayName || ssrMeta?.userName || "Pikcir"
+        } />
+        <meta property="og:description" content={
+          user?.userDescription || ssrMeta?.userDescription || "Pikcir - Resmini al gel!"
+        } />
+        {(ssrMeta?.avatarUrl) && (
+          <meta property="og:image" content={ssrMeta.avatarUrl} />
+        )}
+        <meta property="og:type" content="profile" />
       </Head>
       <Header user={user} />
       <main className="h-auto app-main-with-tab-bar">

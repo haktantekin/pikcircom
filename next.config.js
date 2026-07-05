@@ -6,6 +6,14 @@ const nextConfig = {
     return {
       beforeFiles: [
         {
+          source: "/google-site-verification\\=SVoB2fTtMXd1btaIhmknHDqVF-q0lmVQ1Ba6NZte2fo.txt",
+          destination: "/api/google-site-verification",
+        },
+        {
+          source: "/sitemap.xml",
+          destination: "/api/sitemap",
+        },
+        {
           source: "/api/posts/:postId/favorites",
           destination: "/api/posts/favorites/:postId",
         },
