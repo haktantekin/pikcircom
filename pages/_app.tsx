@@ -7,6 +7,7 @@ import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { NotificationProvider } from "@/components/main/header/notifications/NotificationProvider";
 import ContentProtection from "@/components/ContentProtection";
+import Script from "next/script";
 
 const mantineTheme = {
   defaultRadius: "md" as const,
@@ -21,7 +22,20 @@ const mantineTheme = {
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <Provider store={store}>
+    <>
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-K8YC6CMM37"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-K8YC6CMM37');
+        `}
+      </Script>
+      <Provider store={store}>
       <MantineProvider
         withGlobalStyles
         withNormalizeCSS={false}
@@ -34,5 +48,6 @@ export default function App({ Component, pageProps }: AppProps) {
         </NotificationProvider>
       </MantineProvider>
     </Provider>
+    </>
   )
 }
