@@ -16,7 +16,6 @@ export interface ProfilePageUser {
   userName: string;
   userTypeName?: string;
   userDescription?: string;
-  phoneNumber?: string;
   birthDate?: string;
   avatarUrls?: Record<string, string>;
   coverUrls?: Record<string, string>;
@@ -63,6 +62,7 @@ export interface ProfilePageUser {
     count?: number;
     item?: string[];
     postIds?: number[];
+    visibility?: string;
     posts?: {
       id: string;
       subject?: string;
@@ -146,14 +146,6 @@ export default function ProfilePageShell({ activeTab }: ProfilePageShellProps) {
         setNoUser(2);
       });
   }, [profileSlug, applyProfileResponse]);
-
-  useEffect(() => {
-    if (!user || activeTab !== "collection" || user.isOwnProfile) {
-      return;
-    }
-
-    void router.replace(profilePath(user.userName));
-  }, [user, activeTab, router]);
 
   if (!router.isReady || !profileSlug || loadedProfile !== profileSlug) {
     return null;

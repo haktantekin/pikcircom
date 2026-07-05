@@ -2,7 +2,6 @@ import {
   IconAlignJustified,
   IconAt,
   IconCake,
-  IconDeviceMobile,
   IconLockOpen,
   IconMail,
   IconPhotoEdit,
@@ -46,7 +45,6 @@ type SessionShape = {
   firstName?: string | null;
   lastName?: string | null;
   userDescription?: string | null;
-  phoneNumber?: string | null;
   birthDate?: string | null;
   avatarUrls?: Record<string, string>;
   coverUrls?: Record<string, string>;
@@ -95,7 +93,6 @@ export default function ProfileSettingsModal({
       userDescription: "",
       email: "",
       password: "",
-      phoneNumber: "",
       birthDate: null as Date | null,
     },
   });
@@ -136,7 +133,6 @@ export default function ProfileSettingsModal({
           userDescription: data.userDescription ?? "",
           email: data.email ?? "",
           password: "",
-          phoneNumber: data.phoneNumber ?? "",
           birthDate: parseApiDate(data.birthDate ?? undefined),
         });
       } catch {
@@ -299,7 +295,6 @@ export default function ProfileSettingsModal({
         lastName: values.lastName.trim(),
         userDescription: values.userDescription.trim(),
         email: values.email.trim(),
-        phoneNumber: values.phoneNumber.trim(),
         birthDate: values.birthDate
           ? formatDateForApi(values.birthDate)
           : "",
@@ -464,13 +459,6 @@ export default function ProfileSettingsModal({
         placeholder="********"
         autoComplete="new-password"
         {...form.getInputProps("password")}
-      />
-
-      <TextInput
-        icon={<IconDeviceMobile size={15} />}
-        type="tel"
-        label={t("phone")}
-        {...form.getInputProps("phoneNumber")}
       />
 
       <DatePickerInput

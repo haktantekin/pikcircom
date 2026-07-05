@@ -31,7 +31,6 @@ export type FlatAuthMeProfilePayload = {
   displayName: unknown;
   firstName: string | null;
   lastName: string | null;
-  phoneNumber: string | null;
   birthDate: string | null;
   userDescription: string | null;
   profileImageId: unknown;
@@ -71,7 +70,6 @@ export async function fetchFlatAuthProfileFromWordPress(
         displayName: u?.displayName,
         firstName: u?.firstName ?? null,
         lastName: u?.lastName ?? null,
-        phoneNumber: u?.phoneNumber ?? null,
         birthDate: u?.birthDate ?? null,
         userDescription: u?.userDescription ?? null,
         profileImageId: u?.profileImageId ?? null,

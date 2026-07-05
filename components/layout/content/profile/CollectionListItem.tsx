@@ -10,7 +10,8 @@ interface CollectionListItemProps {
   link: string;
   item: string[];
   count: number;
-  onUpdate?: (name: string) => Promise<void> | void;
+  visibility?: string;
+  onUpdate?: (updates: { name?: string; visibility?: string }) => Promise<void> | void;
   onDelete?: () => Promise<void> | void;
 }
 
@@ -20,6 +21,7 @@ export default function CollectionListItem({
   link,
   item,
   count,
+  visibility,
   onUpdate,
   onDelete,
 }: CollectionListItemProps) {
@@ -39,6 +41,7 @@ export default function CollectionListItem({
           <CollectionSettings
             key={name}
             name={name}
+            visibility={visibility}
             onUpdate={onUpdate}
             onDelete={onDelete}
           />

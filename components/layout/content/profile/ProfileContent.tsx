@@ -72,6 +72,7 @@ interface CollectionProps {
   count?: number;
   postIds?: number[];
   posts?: CollectionPostProps[];
+  visibility?: string;
 }
 
 interface ProfileContentProps {
@@ -200,9 +201,9 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
     }
   };
 
-  const handleUpdateCollection = async (collectionId: string, name: string) => {
+  const handleUpdateCollection = async (collectionId: string, updates: { name?: string; visibility?: string }) => {
     try {
-      const response = await updateCollection(collectionId, name);
+      const response = await updateCollection(collectionId, updates);
       const updatedCollection = response.data?.collection;
 
       if (!updatedCollection) {
@@ -251,13 +252,11 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
               {t("profileMyLikes")}
             </Link>
           </Tabs.Tab>
-          {user?.isOwnProfile && (
-            <Tabs.Tab className="px-0 text-58b4d1" value="collection">
-              <Link href={collectionsHref} className="block">
-                {t("profileMyCollection")}
-              </Link>
-            </Tabs.Tab>
-          )}
+          <Tabs.Tab className="px-0 text-58b4d1" value="collection">
+            <Link href={collectionsHref} className="block">
+              {t("profileMyCollection")}
+            </Link>
+          </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="piklerim" pt="lg">
           {piklerimFeed.isLoading ? (
@@ -301,8 +300,7 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
             isLoadingMore={likedPaginated.isLoadingMore}
           />
         </Tabs.Panel>
-        {user?.isOwnProfile && (
-          <Tabs.Panel value="collection" pt="lg">
+        <Tabs.Panel value="collection" pt="lg">
           {!selectedCollection ? (
             <>
               {canManageCollections && (
@@ -333,10 +331,11 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
                   key={collection.id}
                   canManage={canManageCollections}
                   name={collection.name}
+                  visibility={collection.visibility}
                   link={resolveCollectionHref(profileUserName, collection)}
                   item={collection.item ?? []}
                   count={postCount}
-                  onUpdate={(name) => handleUpdateCollection(collection.id, name)}
+                  onUpdate={(updates) => handleUpdateCollection(collection.id, updates)}
                   onDelete={() => handleDeleteCollection(collection.id)}
                 />
               );
@@ -375,7 +374,6 @@ export default function ProfileContent({ user, activeTab = "piklerim", readOnly 
             </>
           )}
           </Tabs.Panel>
-        )}
       </Tabs>
     </>
   );

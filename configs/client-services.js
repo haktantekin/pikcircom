@@ -78,8 +78,8 @@ export const getCollections = () =>
 export const createCollection = (name) =>
   client.post(`/api/collections`, { name });
 
-export const updateCollection = (collectionId, name) =>
-  client.patch(`/api/collections/${encodeURIComponent(collectionId)}`, { name });
+export const updateCollection = (collectionId, { name, visibility } = {}) =>
+  client.patch(`/api/collections/${encodeURIComponent(collectionId)}`, { name, visibility });
 
 export const deleteCollection = (collectionId) =>
   client.delete(`/api/collections/${encodeURIComponent(collectionId)}`);

@@ -47,7 +47,6 @@ interface ProfileLayoutUser {
   displayName?: string;
   userName?: string;
   userDescription?: string;
-  phoneNumber?: string;
   birthDate?: string;
   avatarUrls?: Record<string, string>;
   coverUrls?: Record<string, string>;
