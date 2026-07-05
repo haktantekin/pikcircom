@@ -57,7 +57,7 @@ function ListDetailPostsView({
 
 export default function ListDetailPage({ slug }: ListDetailPageProps) {
   const { t } = useTranslation();
-  const [period, setPeriod] = useState<ListPeriod>("today");
+  const [period, setPeriod] = useState<ListPeriod>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [listName, setListName] = useState("");
   const [listId, setListId] = useState("");

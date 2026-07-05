@@ -20,7 +20,6 @@ import i18n from 'i18next';
 import { optimizeProfileImage } from "@/src/profileImage";
 
 export default function RegisterMember() {
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [profileImageData, setProfileImageData] = useState<string | null>(null);
   const [profileImageName, setProfileImageName] = useState("");
 
@@ -33,7 +32,6 @@ export default function RegisterMember() {
       UserName: "",
       Password: "",
       EmailAddress: "",
-      PhoneNumber: "",
       BirthDate: null,
       UserDescription: null,
       ProfileImageData: null as string | null,
@@ -83,21 +81,6 @@ export default function RegisterMember() {
     }),
   });
 
-  function handlePhoneNumberChange(event: ChangeEvent<HTMLInputElement>) {
-    let inputVal = event.target.value;
-    // Girdi sadece sayı içermeli
-    inputVal = inputVal.replace(/\D/g, "");
-    // Telefon numarası formatına uygun hale getirilir
-    if (inputVal.length > 0) {
-      const m = inputVal.match(/(\d{1,3})(\d{1,3})?(\d{1,2})?(\d{1,2})?/);
-      inputVal = m
-        ? `(${m[1]}) ${m[2] || ""}-${m[3] || ""}-${m[4] || ""}`
-        : inputVal;
-    }
-    setPhoneNumber(inputVal);
-    form.setFieldValue('PhoneNumber', inputVal);
-  }
-
   const handleProfileImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
@@ -128,7 +111,6 @@ export default function RegisterMember() {
       username: form.values.UserName,
       password: form.values.Password,
       email: form.values.EmailAddress,
-      phoneNumber: form.values.PhoneNumber,
       birthDate: form.values.BirthDate,
       userDescription: form.values.UserDescription,
       profileImageData: form.values.ProfileImageData,
@@ -233,16 +215,6 @@ export default function RegisterMember() {
             placeholder={t("mailPlaceholder")}
             error={form.errors}
             {...form.getInputProps("EmailAddress")}
-          />
-        </div>
-        <div className="mt-2">
-          <TextInput
-            icon={<IconDeviceMobile size={15} />}
-            type="phone"
-            label={t("phone")}
-            value={phoneNumber}
-            placeholder={t("phonePlaceholder")}
-            onChange={handlePhoneNumberChange}
           />
         </div>
         <div className="mt-2">

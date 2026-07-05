@@ -71,7 +71,6 @@ export default async function handler(
       displayName: data.user?.displayName,
       firstName: data.user?.firstName ?? null,
       lastName: data.user?.lastName ?? null,
-      phoneNumber: data.user?.phoneNumber ?? null,
       birthDate: data.user?.birthDate ?? null,
       userDescription: data.user?.userDescription ?? null,
       profileImageId: data.user?.profileImageId ?? null,
