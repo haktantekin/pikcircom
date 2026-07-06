@@ -105,6 +105,7 @@ export default function MasonryPostCard({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const didLongPress = useRef(false);
+  const linkRef = useRef<HTMLAnchorElement | null>(null);
 
   const clearLongPress = useCallback(() => {
     if (longPressTimer.current) {
@@ -113,7 +114,48 @@ export default function MasonryPostCard({
     }
   }, []);
 
-  const handlePointerDown = useCallback(() => {
+  // Use native touch events to prevent Safari peek/preview
+  useEffect(() => {
+    const node = linkRef.current;
+    if (!node) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      didLongPress.current = false;
+      longPressTimer.current = setTimeout(() => {
+        didLongPress.current = true;
+        setLightboxOpen(true);
+        e.preventDefault();
+      }, 500);
+    };
+
+    const onTouchEnd = () => {
+      clearLongPress();
+      setLightboxOpen(false);
+    };
+
+    const onContextMenu = (e: Event) => {
+      if (didLongPress.current) {
+        e.preventDefault();
+      }
+    };
+
+    node.addEventListener("touchstart", onTouchStart, { passive: false });
+    node.addEventListener("touchend", onTouchEnd);
+    node.addEventListener("touchcancel", onTouchEnd);
+    node.addEventListener("contextmenu", onContextMenu);
+
+    return () => {
+      node.removeEventListener("touchstart", onTouchStart);
+      node.removeEventListener("touchend", onTouchEnd);
+      node.removeEventListener("touchcancel", onTouchEnd);
+      node.removeEventListener("contextmenu", onContextMenu);
+      clearLongPress();
+    };
+  }, [clearLongPress]);
+
+  // Mouse long-press for desktop
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return; // handled by touch events
     didLongPress.current = false;
     longPressTimer.current = setTimeout(() => {
       didLongPress.current = true;
@@ -121,7 +163,8 @@ export default function MasonryPostCard({
     }, 500);
   }, []);
 
-  const handlePointerUpOrCancel = useCallback(() => {
+  const handlePointerUpOrCancel = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
     clearLongPress();
     setLightboxOpen(false);
   }, [clearLongPress]);
@@ -164,6 +207,7 @@ export default function MasonryPostCard({
       previewLabel={label}
     >
       <Link
+        ref={linkRef}
         href={href}
         className={linkClassName}
         aria-label={label}
