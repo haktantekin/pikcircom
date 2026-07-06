@@ -9,6 +9,13 @@ import { fetchAuthProfile } from "@/src/fetchAuthProfile";
 import { sortTagsByPostCountDesc } from "@/src/sortTags";
 import TagOptionRow from "./TagOptionRow";
 
+interface CatalogTag {
+  slug: string;
+  name: string;
+  imageUrl?: string;
+  postCount?: number;
+}
+
 interface TagsInputProps {
   description?: string;
   onDescriptionChange?: (value: string) => void;
@@ -94,9 +101,10 @@ export default function TagsInput({
         if (cancelled) {
           return;
         }
-        const catalog = response.data.tags ?? [];
+        const catalog: CatalogTag[] = response.data.exploreTags ?? response.data.tags ?? [];
+        const sorted = sortTagsByPostCountDesc(catalog);
         setTagOptions(
-          catalog.map((item: { slug: string; name: string; imageUrl?: string }) => ({
+          sorted.map((item) => ({
             value: item.slug,
             label: item.name,
             imageUrl: item.imageUrl || "",
