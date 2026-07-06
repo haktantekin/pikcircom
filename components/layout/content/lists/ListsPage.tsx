@@ -33,7 +33,10 @@ export default function ListsPage() {
       try {
         const response = await getLists({ period });
         if (!cancelled) {
-          setLists(response.data.lists ?? []);
+          const sorted = [...(response.data.lists ?? [])].sort(
+            (a: ListSummary, b: ListSummary) => b.postCount - a.postCount,
+          );
+          setLists(sorted);
         }
       } catch {
         if (!cancelled) {

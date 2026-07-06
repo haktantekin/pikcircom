@@ -5,7 +5,6 @@ import ExploreFeed from "@/components/layout/content/contentCenter/ExploreFeed";
 import TagList, {
   type TagSelectMeta,
 } from "@/components/layout/content/contentCenter/TagList";
-import Search from "@/components/main/Search";
 import { getTags } from "@/configs/client-services";
 import { IconChevronLeft } from "@tabler/icons-react";
 
@@ -80,9 +79,6 @@ export default function TagsPage() {
 
   return (
     <div className="col-span-12 relative mb-4 mt-4 lg:mt-0">
-      <div className="flex lg:hidden relative mt-0 mb-4 justify-center items-center">
-        <Search />
-      </div>
 
       {!inTagView ? (
         <TagList

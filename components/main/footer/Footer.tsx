@@ -32,7 +32,7 @@ import { useGuestFeedReadOnly } from "@/src/useGuestFeedReadOnly";
 
 
 
-const iconSize = 22;
+const iconSize = 19;
 
 const iconStroke = 1.15;
 
@@ -40,7 +40,7 @@ const iconStroke = 1.15;
 
 function tabClass(isActive: boolean) {
 
-  return `flex min-h-[3rem] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 transition-colors active:bg-gray-100/90 ${
+  return `flex min-h-[2.75rem] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-1 py-1 transition-colors active:bg-gray-100/90 ${
 
     isActive ? "text-58b4d1" : "text-gray-600 hover:text-202124"
 
@@ -100,11 +100,11 @@ export default function Footer() {
 
       >
 
-        <div className="w-full border-t border-gray-100 bg-white/95 shadow-[0_-6px_24px_-8px_rgba(33,35,38,0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-white/88 md:mx-auto md:max-w-[800px] md:rounded-t-2xl">
+        <div className="mx-auto w-[95%] rounded-[20px] border-t border-gray-100 bg-white/95 shadow-[0_-6px_24px_-8px_rgba(33,35,38,0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-white/88 md:max-w-[800px] md:rounded-t-2xl">
 
           <nav
 
-            className="flex w-full items-stretch px-0.5 pt-1"
+            className="flex w-full items-stretch px-3 pt-1"
 
             aria-label={t("menus")}
 

@@ -87,6 +87,7 @@ export default function Header({user}: HeaderProps) {
   };
 
   return (
+    <>
     <header className="sticky top-0 z-30 flex h-14 w-full items-center border-b border-gray-100/90 bg-white/95 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-white/80">
       <div className="container">
         <div className="grid grid-cols-12 w-full min-h-full">
@@ -162,5 +163,9 @@ export default function Header({user}: HeaderProps) {
         </div>
       </div>
     </header >
+    <div className="sticky top-14 z-20 border-b border-gray-100/90 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-sm lg:hidden supports-[backdrop-filter]:bg-white/80">
+      <Search />
+    </div>
+    </>
   )
 }

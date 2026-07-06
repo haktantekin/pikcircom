@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import MasonryPostGrid from "@/components/MasonryPostGrid";
 import SensitivePostMedia from "@/components/SensitivePostMedia";
 import { distributePreviewUrlsToColumns } from "@/src/masonryLayout";
@@ -101,6 +102,42 @@ export default function MasonryPostCard({
       pickPostImageUrl(post.image, post.imageUrls, imageVariant),
     ) || DEFAULT_FALLBACK;
   const [imageSrc, setImageSrc] = useState(initialSrc);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didLongPress = useRef(false);
+
+  const clearLongPress = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  const handlePointerDown = useCallback(() => {
+    didLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      didLongPress.current = true;
+      setLightboxOpen(true);
+    }, 500);
+  }, []);
+
+  const handlePointerUpOrCancel = useCallback(() => {
+    clearLongPress();
+    setLightboxOpen(false);
+  }, [clearLongPress]);
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    if (didLongPress.current) {
+      e.preventDefault();
+      didLongPress.current = false;
+    }
+  }, []);
+
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    if (didLongPress.current) {
+      e.preventDefault();
+    }
+  }, []);
 
   // `subject` bazen WordPress'ten `&#8217;` gibi HTML entity'lerle gelir.
   // Bunları kullanıcıya göstermeden önce decode ediyoruz.
@@ -116,6 +153,7 @@ export default function MasonryPostCard({
   }, [initialSrc, post.id]);
 
   return (
+    <>
     <SensitivePostMedia
       postId={post.id}
       tags={post.tags}
@@ -130,6 +168,11 @@ export default function MasonryPostCard({
         className={linkClassName}
         aria-label={label}
         title={label}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUpOrCancel}
+        onPointerCancel={handlePointerUpOrCancel}
+        onContextMenu={handleContextMenu}
+        onClick={handleClick}
       >
         <Image
           src={imageSrc}
@@ -180,6 +223,26 @@ export default function MasonryPostCard({
         ) : null}
       </Link>
     </SensitivePostMedia>
+      {lightboxOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-md"
+            onClick={() => setLightboxOpen(false)}
+            onPointerUp={() => setLightboxOpen(false)}
+          >
+            <Image
+              src={normalizeMediaUrl(pickPostImageUrl(post.image, post.imageUrls, "full")) || imageSrc}
+              alt={label}
+              width={1200}
+              height={1600}
+              className="max-h-[85vh] max-w-[90vw] rounded-xl object-contain"
+              unoptimized
+            />
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 

@@ -143,7 +143,7 @@ export default function TagList({
         )}
 
         {!isLoading && sortedTags.length > 0 && isGrid && (
-          <ul className="grid grid-cols-2 gap-2 sm:gap-3">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
             {showAllTagsButton ? (
               <li className="col-span-2">{renderAllTagsButton()}</li>
             ) : null}
