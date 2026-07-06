@@ -91,6 +91,7 @@ export default async function handler(
 </urlset>`;
 
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
-  res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=600");
+  res.setHeader("Cache-Control", "public, s-maxage=600, stale-while-revalidate=300");
+  res.setHeader("CDN-Cache-Control", "public, s-maxage=600, stale-while-revalidate=300");
   return res.status(200).send(xml);
 }
