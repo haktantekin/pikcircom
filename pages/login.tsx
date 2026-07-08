@@ -50,7 +50,7 @@ export default function LoginPage() {
           content="Kafanın içinde biri var ve sürekli espri yapıyorsa bize katıl. Resmini al gel, koleksiyonlar oluştur, eğlen!"
         />
       </Head>
-      <div className="absolute -top-[70px] left-1/2 hidden -translate-x-1/2 animate-piki opacity-0 lg:block lg:pl-0">
+      <div className="absolute left-1/2 hidden -translate-x-1/2 animate-piki opacity-0 lg:block lg:pl-0">
         <Image
           src="/logo.png"
           alt="Pickup"

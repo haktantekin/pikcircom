@@ -11,6 +11,7 @@ declare global {
             client_id: string;
             callback: (response: { credential: string }) => void;
             ux_mode?: string;
+            auto_select?: boolean;
           }) => void;
           renderButton: (
             element: HTMLElement,

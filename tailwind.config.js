@@ -20,7 +20,7 @@ module.exports = {
         pikiAnimate:{
           "70%": { top: '80px', opacity: "0%" },
           "80%": { top: '80px', opacity: "100%" },
-          "100%": {top:'24.50%', opacity: "100%"  },
+          "100%": {top:'20%', opacity: "100%"  },
         },
         cloudAnimate:{
           "0%": { left: "0%" },
