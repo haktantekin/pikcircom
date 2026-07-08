@@ -14,7 +14,7 @@ export type ApiCacheProfile =
   | "none";
 
 const PROFILES: Record<ApiCacheProfile, string> = {
-  auth: "private, max-age=120, stale-while-revalidate=300",
+  auth: "private, no-store, max-age=0, must-revalidate",
   feed: "private, max-age=45, stale-while-revalidate=90",
   explore: "private, max-age=90, stale-while-revalidate=180",
   profile: "private, max-age=180, stale-while-revalidate=360",

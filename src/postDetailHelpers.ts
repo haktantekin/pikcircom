@@ -1,4 +1,5 @@
 import { ingestPostSensitivity } from "@/src/sensitiveContent";
+import { decodeHtmlEntities } from "@/src/decodeHtmlEntities";
 
 export interface PostDetailTag {
   slug: string;
@@ -73,9 +74,9 @@ export function normalizeApiPostPayload(data: unknown): PostDetailShape | null {
     id,
     subject:
       typeof raw.subject === "string"
-        ? raw.subject
+        ? decodeHtmlEntities(raw.subject)
         : typeof raw.title === "string"
-          ? raw.title
+          ? decodeHtmlEntities(raw.title)
           : undefined,
     userName: typeof raw.userName === "string" ? raw.userName : undefined,
     createDate:

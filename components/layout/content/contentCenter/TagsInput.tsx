@@ -2,7 +2,7 @@ import { Textarea, Tooltip, MultiSelect, Loader } from "@mantine/core";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { IconAlertCircle } from "@tabler/icons-react";
-import { useEffect, useMemo, useState, type ComponentPropsWithoutRef } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef } from "react";
 import { getCollections, getLists, getTags } from "@/configs/client-services";
 import { profileCollectionsPath } from "@/src/profilePaths";
 import { fetchAuthProfile } from "@/src/fetchAuthProfile";
@@ -82,6 +82,9 @@ export default function TagsInput({
   const [tagsLoading, setTagsLoading] = useState(true);
   const [destinationsLoading, setDestinationsLoading] = useState(true);
   const [profileCollectionsHref, setProfileCollectionsHref] = useState("/home");
+  const tagSelectRef = useRef<HTMLInputElement>(null);
+  const collectionSelectRef = useRef<HTMLInputElement>(null);
+  const listSelectRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchAuthProfile()
@@ -161,25 +164,29 @@ export default function TagsInput({
     const next = value.filter((slug) => allowed.has(slug)).slice(0, MAX_TAGS);
     if (onTagsChange) {
       onTagsChange(next);
-      return;
+    } else {
+      setInternalTags(next);
     }
-    setInternalTags(next);
+    // Etiket seçilince dropdown'ı kapat
+    tagSelectRef.current?.blur();
   }
 
   function updateCollectionIds(value: string[]) {
     if (onCollectionIdsChange) {
       onCollectionIdsChange(value);
-      return;
+    } else {
+      setInternalCollectionIds(value);
     }
-    setInternalCollectionIds(value);
+    collectionSelectRef.current?.blur();
   }
 
   function updateListIds(value: string[]) {
     if (onListIdsChange) {
       onListIdsChange(value);
-      return;
+    } else {
+      setInternalListIds(value);
     }
-    setInternalListIds(value);
+    listSelectRef.current?.blur();
   }
 
   const tagData = tags ?? internalTags;
@@ -250,6 +257,7 @@ export default function TagsInput({
           <p className="text-sm text-gray-500 py-2">{t("tagsCatalogEmpty")}</p>
         ) : (
           <MultiSelect
+            ref={tagSelectRef}
             data={sortedTagOptions}
             itemComponent={TagSelectItem}
             label={compact ? undefined : t("tags")}
@@ -277,6 +285,7 @@ export default function TagsInput({
           </p>
         ) : (
           <MultiSelect
+            ref={collectionSelectRef}
             data={collectionOptions}
             label={compact ? undefined : t("selectCollectionsLabel")}
             placeholder={t("selectCollectionsPlaceholder")}
@@ -311,6 +320,7 @@ export default function TagsInput({
           </p>
         ) : (
           <MultiSelect
+            ref={listSelectRef}
             data={listOptions}
             label={compact ? undefined : t("selectListsLabel")}
             placeholder={t("selectListsPlaceholder")}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import GoogleSignInButton from "./GoogleSignInButton";
 import { IconLockOpen, IconUser } from "@tabler/icons-react";
 import { Box, TextInput, Checkbox } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -109,6 +110,7 @@ export default function LoginMember() {
       >
         {t("beMember")}
       </Link>
+      <GoogleSignInButton />
     </>
   );
 }

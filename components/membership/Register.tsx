@@ -15,6 +15,7 @@ import { register } from "../../configs/client-services";
 import { useForm } from "@mantine/form";
 import router from "next/router";
 import Link from "next/link";
+import GoogleSignInButton from "./GoogleSignInButton";
 import { useTranslation } from "react-i18next";
 import i18n from 'i18next';
 import { optimizeProfileImage } from "@/src/profileImage";
@@ -245,6 +246,7 @@ export default function RegisterMember() {
         <Link href="/login" className=' text-58b4d1 text-sm text-center mt-1 border border-58b4d1 rounded p-2 px-0 flex mx-auto w-full items-center justify-center'>
           {t("logIn")}
         </Link>
+        <GoogleSignInButton />
       </Box>
     </>
   );

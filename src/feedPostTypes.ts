@@ -1,4 +1,5 @@
 import { applySensitiveMetadataToPosts } from "@/src/sensitiveContent";
+import { decodeHtmlEntities } from "@/src/decodeHtmlEntities";
 
 export interface ExplorePost {
   id: string;
@@ -20,5 +21,10 @@ export interface ExplorePost {
 
 /** Feed batch: hassas postId kaydı + aynı dizi */
 export function prepareExplorePosts(posts: ExplorePost[]): ExplorePost[] {
+  for (const p of posts) {
+    if (p.subject) {
+      p.subject = decodeHtmlEntities(p.subject);
+    }
+  }
   return applySensitiveMetadataToPosts(posts);
 }

@@ -33,6 +33,9 @@ export default function ShowProfileMobile({ user }: ShowProfileMobileProps) {
     try {
       await logout();
     } finally {
+      if (typeof window !== 'undefined' && window.google?.accounts?.id) {
+        window.google.accounts.id.disableAutoSelect();
+      }
       dispatch(clearUser());
       dispatchAuthSessionChanged();
       if (typeof window !== 'undefined') {

@@ -27,6 +27,7 @@ import { useGuestFeedReadOnly } from "@/src/useGuestFeedReadOnly";
 import type { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import axios from "axios";
 import { extractPostFromApiPayload } from "@/src/normalizePostMedia";
+import { decodeHtmlEntities } from "@/src/decodeHtmlEntities";
 
 interface SsrPostMeta {
   subject?: string;
@@ -61,15 +62,16 @@ export const getServerSideProps: GetServerSideProps<{
 
     const post = extractPostFromApiPayload(data);
     const subject = post?.subject ?? (typeof data?.post?.subject === "string" ? data.post.subject : undefined);
+    const decodedSubject = subject ? decodeHtmlEntities(subject) : undefined;
     const image = post?.image ?? post?.imageUrls?.large ?? post?.imageUrls?.medium ?? undefined;
 
     return {
       props: {
         ssrMeta: {
-          subject: subject ?? null,
+          subject: decodedSubject ?? null,
           userName: profileSlug,
           image: image ?? null,
-          description: subject ? `${subject} - @${profileSlug} tarafından paylaşıldı` : null,
+          description: decodedSubject ? `${decodedSubject} - @${profileSlug} tarafından paylaşıldı` : null,
         } as SsrPostMeta,
       },
     };

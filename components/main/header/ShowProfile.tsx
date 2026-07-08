@@ -38,6 +38,9 @@ export default function ShowProfile({ user }: ShowProfileProps) {
     try {
       await logout();
     } finally {
+      if (typeof window !== "undefined" && window.google?.accounts?.id) {
+        window.google.accounts.id.disableAutoSelect();
+      }
       dispatch(clearUser());
       dispatchAuthSessionChanged();
       if (typeof window !== "undefined") {
