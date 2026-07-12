@@ -140,6 +140,9 @@ export const getPostById = (postId) =>
 export const deletePost = (postId) =>
   client.delete(`/api/posts/${encodeURIComponent(postId)}`);
 
+export const updatePost = (postId, data) =>
+  client.patch(`/api/posts/${encodeURIComponent(postId)}`, data);
+
 export const favoritePost = (postId) =>
   client.post(`/api/posts/${encodeURIComponent(postId)}/favorite`);
 

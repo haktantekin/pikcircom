@@ -193,6 +193,7 @@
     "collectionPublic":"Public",
     "collectionPrivate":"Only Me",
     "deleteFull":"Delete",
+    "editPost":"Edit",
     "postDeleteConfirm":"Are you sure you want to delete this post?",
     "postDeleteError":"Could not delete the post.",
     "update":"Update",
@@ -264,5 +265,12 @@
     "notificationPostCollectedWithSubject": "{{user}} added your post «{{subject}}» to the collection «{{collection}}».",
     "notificationPostCollectedShort": "{{user}} added one of your posts to the collection «{{collection}}».",
     "notificationPostCollectedFallback": "{{user}} added one of your posts to a collection.",
-    "notificationsMarkAllRead": "Mark all notifications as read"
+    "notificationsMarkAllRead": "Mark all notifications as read",
+    "description": "Description",
+    "collections": "Collections",
+    "loading": "Loading…",
+    "noCollections": "No collections yet.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "postUpdateError": "Could not update post."
 }

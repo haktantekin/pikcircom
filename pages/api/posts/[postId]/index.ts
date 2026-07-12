@@ -96,6 +96,39 @@ export default async function handler(
     }
   }
 
-  res.setHeader("Allow", ["GET", "DELETE"]);
+  if (req.method === "PATCH") {
+    if (!authToken) {
+      return res.status(401).json({
+        message: "Yetkilendirme bilgisi bulunamadi",
+      });
+    }
+
+    try {
+      const { data, status } = await axios.patch(postUrl, req.body, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      return res.status(status).json(data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const statusCode = error.response?.status ?? 500;
+        const message =
+          typeof error.response?.data?.message === "string"
+            ? error.response.data.message
+            : error.message ?? "Gonderi guncellenemedi";
+
+        return res.status(statusCode).json({ message });
+      }
+
+      return res.status(500).json({
+        message: "WordPress gonderi guncelleme istegi sirasinda beklenmeyen bir hata olustu",
+      });
+    }
+  }
+
+  res.setHeader("Allow", ["GET", "PATCH", "DELETE"]);
   return res.status(405).json({ message: "Method not allowed" });
 }

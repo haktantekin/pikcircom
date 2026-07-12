@@ -9,6 +9,7 @@ import {
   IconBrandPinterest,
   IconDownload,
   IconTrash,
+  IconEdit,
 } from "@tabler/icons-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,6 +31,7 @@ export type PostShareProps = {
   postId?: string;
   authorUserName?: string;
   onDeleted?: () => void;
+  onEdit?: () => void;
 };
 
 function openShareWindow(url: string) {
@@ -46,6 +48,7 @@ export default function PostShare({
   postId,
   authorUserName,
   onDeleted,
+  onEdit,
 }: PostShareProps) {
   const { t } = useTranslation();
   const { userName: viewerUserName } = useCurrentUserName();
@@ -176,6 +179,12 @@ export default function PostShare({
         {canDelete ? (
           <>
             <Menu.Divider />
+            <Menu.Item
+              icon={<IconEdit size={18} />}
+              onClick={() => onEdit?.()}
+            >
+              {t("editPost")}
+            </Menu.Item>
             <Menu.Item
               color="red"
               icon={<IconTrash size={18} />}

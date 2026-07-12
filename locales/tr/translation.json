@@ -194,6 +194,7 @@
     "collectionPublic":"Herkese Açık",
     "collectionPrivate":"Sadece Ben",
     "deleteFull":"Komple Sil",
+    "editPost":"Düzenle",
     "postDeleteConfirm":"Bu gönderiyi silmek istediğine emin misin?",
     "postDeleteError":"Gönderi silinemedi.",
     "update":"Güncelle",
@@ -265,5 +266,12 @@
     "notificationPostCollectedWithSubject": "{{user}} «{{subject}}» gönderini «{{collection}}» koleksiyonuna ekledi.",
     "notificationPostCollectedShort": "{{user}} bir gönderini «{{collection}}» koleksiyonuna ekledi.",
     "notificationPostCollectedFallback": "{{user}} bir gönderini koleksiyonuna ekledi.",
-    "notificationsMarkAllRead": "Tüm bildirimleri okundu işaretle"
+    "notificationsMarkAllRead": "Tüm bildirimleri okundu işaretle",
+    "description": "Açıklama",
+    "collections": "Koleksiyonlar",
+    "loading": "Yükleniyor…",
+    "noCollections": "Henüz koleksiyon yok.",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "postUpdateError": "Gönderi güncellenemedi."
 }

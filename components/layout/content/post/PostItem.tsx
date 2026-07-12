@@ -16,6 +16,7 @@ import { formatRelativeTime } from "@/src/formatRelativeTime";
 import SensitivePostMedia from "@/components/SensitivePostMedia";
 import type { PostTagItem } from "@/components/layout/content/contentCenter/post/TagModal";
 import { shouldGatePost } from "@/src/sensitiveContent";
+import EditPostModal from "../contentCenter/post/EditPostModal";
 
 
 interface PostItemProps {
@@ -54,11 +55,13 @@ interface PostItemProps {
   categoryName?: string;
   isSensitive?: boolean;
   onDeleted?: () => void;
+  onEdited?: (data: { description: string; collectionIds: string[] }) => void;
 }
 
-export default function PostItem({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, collections, onCollectionsChange, readOnly = false, tags = [], categoryName, isSensitive, onDeleted }: PostItemProps) {
+export default function PostItem({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, collections, onCollectionsChange, readOnly = false, tags = [], categoryName, isSensitive, onDeleted, onEdited }: PostItemProps) {
   const [pikOpened, setPikOpened] = useState(false);
   const [reportOpened, setReportOpened] = useState(false);
+  const [editOpened, setEditOpened] = useState(false);
   const [openDraw, { open, close }] = useDisclosure(false);
   const [liveCommentCount, setLiveCommentCount] = useState(commentCount);
   const [livePikCount, setLivePikCount] = useState(pikCount);
@@ -182,6 +185,7 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
               postId={postId}
               authorUserName={userName}
               onDeleted={onDeleted}
+              onEdit={() => setEditOpened(true)}
             />
             <button type="button" className="flex items-center gap-1 text-sm text-126782" onClick={() => setReportOpened(true)}>
               <IconInfoTriangle size={20} stroke={1.0} />
@@ -203,6 +207,15 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
 
         {!readOnly ? <PostCollapse postId={postId} onCommentCountChange={setLiveCommentCount} /> : null}
       </div>
+      {postId ? (
+        <EditPostModal
+          postId={postId}
+          currentDescription={postTitle ?? ""}
+          opened={editOpened}
+          onClose={() => setEditOpened(false)}
+          onSaved={onEdited}
+        />
+      ) : null}
     </>
   )
 }

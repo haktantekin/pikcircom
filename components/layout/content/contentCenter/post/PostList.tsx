@@ -17,6 +17,7 @@ import { formatRelativeTime } from "@/src/formatRelativeTime";
 import FollowToggle from "@/components/shared/FollowToggle";
 import SensitivePostMedia from "@/components/SensitivePostMedia";
 import { shouldGatePost } from "@/src/sensitiveContent";
+import EditPostModal from "./EditPostModal";
 
 interface PostListProps {
   postId?: string,
@@ -58,11 +59,13 @@ interface PostListProps {
   /** Misafir: beğeni, yorum, koleksiyon vb. kapalı */
   readOnly?: boolean
   onDeleted?: () => void
+  onEdited?: (data: { description: string; collectionIds: string[] }) => void
 }
 
-export default function PostList({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, profile, authorIsFollowing = false, collectionItem, tags = [], categoryName, isSensitive, collections, onCollectionsChange, readOnly = false, onDeleted }: PostListProps) {
+export default function PostList({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, profile, authorIsFollowing = false, collectionItem, tags = [], categoryName, isSensitive, collections, onCollectionsChange, readOnly = false, onDeleted, onEdited }: PostListProps) {
   const [reportOpened, setReportOpened] = useState(false);
   const [tagOpened, setTagOpened] = useState(false);
+  const [editOpened, setEditOpened] = useState(false);
   const [opened, { toggle }] = useDisclosure(false);
   const [openDraw, { open, close }] = useDisclosure(false);
   const [liveCommentCount, setLiveCommentCount] = useState(commentCount);
@@ -209,6 +212,7 @@ export default function PostList({ postId, userName, userLink, postLink, time, i
               postId={postId}
               authorUserName={userName}
               onDeleted={onDeleted}
+              onEdit={() => setEditOpened(true)}
             />
             <button type="button" className="flex items-center gap-1 text-sm text-126782" onClick={() => setReportOpened(true)}>
               <IconInfoTriangle size={20} stroke={1.0} />
@@ -226,6 +230,15 @@ export default function PostList({ postId, userName, userLink, postLink, time, i
           <PostCollapse postId={postId} onCommentCountChange={setLiveCommentCount} />
         </Collapse>
       </div>
+      {postId ? (
+        <EditPostModal
+          postId={postId}
+          currentDescription={postTitle ?? ""}
+          opened={editOpened}
+          onClose={() => setEditOpened(false)}
+          onSaved={onEdited}
+        />
+      ) : null}
     </>
   )
 }
