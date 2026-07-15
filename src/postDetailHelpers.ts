@@ -11,6 +11,7 @@ export interface PostDetailShape {
   id: string;
   subject?: string;
   userName?: string;
+  badge?: string;
   createDate?: string;
   image?: string;
   imageUrls?: Record<string, string>;
@@ -79,6 +80,7 @@ export function normalizeApiPostPayload(data: unknown): PostDetailShape | null {
           ? decodeHtmlEntities(raw.title)
           : undefined,
     userName: typeof raw.userName === "string" ? raw.userName : undefined,
+    badge: typeof raw.badge === "string" ? raw.badge : undefined,
     createDate:
       typeof raw.createDate === "string"
         ? raw.createDate
