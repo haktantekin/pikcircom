@@ -86,9 +86,9 @@ export default function ExploreFeed({
     return set;
   }, [hiddenSlugs]);
 
-  // hiddenSet'e göre postları client-side filtrele. Liste, server'dan gelen ham
-  // listenin bir türevidir; kullanıcı bir etiketi gizlediğinde / gösterdiğinde
-  // sayfa yenilenmeden anlık olarak feed'den çıkar / geri gelir.
+  // hiddenSet'e göre postları client-side filtrele. Gizli etiketlerden birini
+  // taşıyan postlar feed'den çıkar. Kullanıcı etiketi geri açtığında post
+  // tekrar görünür.
   const visiblePosts = useMemo(() => {
     if (hiddenSet.size === 0) {
       return posts;

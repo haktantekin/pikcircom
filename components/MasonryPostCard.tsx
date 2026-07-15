@@ -92,7 +92,7 @@ export default function MasonryPostCard({
   href,
   imageVariant = "thumb",
   sizes = "(max-width: 1024px) 33vw, 220px",
-  linkClassName = "block w-full overflow-hidden rounded-sm outline-none ring-58b4d1 transition hover:opacity-95 focus-visible:ring-2",
+  linkClassName = "block w-full overflow-hidden rounded-sm outline-none ring-58b4d1 focus-visible:ring-2",
   imageClassName = "h-auto w-full block",
   roundedClassName = "rounded-sm",
   showMeta = false,
@@ -211,7 +211,6 @@ export default function MasonryPostCard({
         href={href}
         className={linkClassName}
         aria-label={label}
-        title={label}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUpOrCancel}
         onPointerCancel={handlePointerUpOrCancel}
@@ -252,17 +251,6 @@ export default function MasonryPostCard({
               </div>
             ) : null}
 
-            {/* Hover'da görünen gradient + uzun başlık overlay (Pinterest detayı) */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-[34px] bg-gradient-to-t from-black/80 via-black/40 to-transparent px-2.5 pb-2.5 pt-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-              {subject?.trim() ? (
-                <p className="line-clamp-2 text-xs font-medium leading-snug text-white">
-                  {subject.trim()}
-                </p>
-              ) : null}
-              {author ? (
-                <p className="mt-0.5 text-[11px] text-white/85">@{author}</p>
-              ) : null}
-            </div>
           </>
         ) : null}
       </Link>
@@ -304,7 +292,7 @@ export function MasonryPreviewImage({
   className = "h-auto w-full block",
 }: MasonryPreviewImageProps) {
   return (
-    <div className="overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-100 transition-transform duration-200 group-hover:ring-58b4d1/20">
+    <div className="overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-100">
       <Image
         src={src}
         alt={alt}

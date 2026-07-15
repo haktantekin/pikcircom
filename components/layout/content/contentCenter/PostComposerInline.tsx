@@ -85,7 +85,7 @@ export default function PostComposerInline({
   return (
     <section
       data-composer-dropzone
-      className={`relative mb-4 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-card ${showOnMobile ? "block" : "hidden lg:block"} ${
+      className={`relative mb-4 rounded-2xl border border-gray-200 bg-white shadow-card ${showOnMobile ? "block" : "hidden lg:block"} ${
         isDragActive ? "border-58b4d1 ring-2 ring-58b4d1/30" : ""
       }`}
       {...dropZoneProps}
@@ -111,42 +111,90 @@ export default function PostComposerInline({
         </div>
       ) : null}
 
-      <div className="flex gap-3 px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
-        <div className="shrink-0">
-          <Image
-            src={avatarUrl}
-            alt=""
-            width={40}
-            height={40}
-            className="h-10 w-10 rounded-full object-cover"
-            unoptimized
-          />
-        </div>
-
-        <div className="min-w-0 flex-1">
+      <div className="px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
+        <div className="min-w-0">
           {!file ? (
             <button
               type="button"
               onClick={openFilePicker}
               disabled={isSubmitting}
-              className="group block w-full rounded-xl border border-dashed border-gray-300 bg-gray-50/60 px-4 py-3 text-left text-base leading-snug text-gray-500 transition-colors hover:border-58b4d1 hover:bg-58b4d1/5 hover:text-58b4d1 disabled:opacity-60"
+              className="block w-full rounded-xl bg-transparent px-1 py-2 text-left text-[20px] font-light leading-tight text-gray-400 transition-colors hover:bg-gray-50/80 hover:text-gray-500 disabled:opacity-60 sm:text-[24px]"
             >
-              <span className="flex items-center gap-2">
-                <IconPhoto
-                  size={18}
-                  stroke={1.5}
-                  className="text-gray-400 group-hover:text-58b4d1"
-                />
-                <span>{t("composePlaceholder")}</span>
-              </span>
-              <span className="mt-1 block text-xs text-gray-400 group-hover:text-58b4d1/80">
-                {t("composeDropOverlay")}
-              </span>
+              {t("composePlaceholder")}
             </button>
           ) : (
-            // === Paket A: dosya seçildikten sonra iki sütunlu düzen ===
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.1fr_1fr]">
-              {/* SOL — görsel önizleme */}
+            <div className="flex min-w-0 flex-col gap-3">
+              <div className="relative">
+                <Image
+                  src={avatarUrl}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="pointer-events-none absolute left-3 top-2.5 h-10 w-10 rounded-full object-cover"
+                  unoptimized
+                />
+                <textarea
+                  value={description}
+                  onChange={(event) =>
+                    onDescriptionChange(
+                      event.target.value.slice(0, DESCRIPTION_MAX),
+                    )
+                  }
+                  placeholder={t("enterDescription")}
+                  maxLength={DESCRIPTION_MAX}
+                  rows={2}
+                  disabled={isSubmitting}
+                  className={`peer w-full resize-none rounded-lg border bg-white pb-6 pl-14 pr-3 pt-3 text-[15px] leading-relaxed text-gray-900 placeholder:text-gray-400 focus:border-58b4d1 focus:outline-none focus:ring-2 focus:ring-58b4d1/30 disabled:opacity-60 ${
+                    descriptionOver ? "border-red-300" : "border-gray-200"
+                  }`}
+                />
+                <div
+                  className={`pointer-events-none absolute bottom-1.5 right-2 flex items-center gap-2 text-[10px] transition-opacity ${
+                    descriptionOver || remaining <= 10
+                      ? "opacity-100"
+                      : "opacity-0 peer-hover:opacity-100 peer-focus:opacity-100"
+                  }`}
+                >
+                  {descriptionOver ? (
+                    <span className="font-semibold text-red-500">
+                      {t("charLimitHint", { count: DESCRIPTION_MAX })}
+                    </span>
+                  ) : null}
+                  <span
+                    className={
+                      descriptionOver
+                        ? "font-semibold text-red-500"
+                        : remaining <= 10
+                          ? "text-orange-500"
+                          : "text-gray-400"
+                    }
+                  >
+                    {descriptionLength}/{DESCRIPTION_MAX}
+                  </span>
+                </div>
+              </div>
+
+              <TagsInput
+                description={description}
+                onDescriptionChange={onDescriptionChange}
+                tags={tags}
+                onTagsChange={onTagsChange}
+                collectionIds={collectionIds}
+                onCollectionIdsChange={onCollectionIdsChange}
+                listIds={listIds}
+                onListIdsChange={onListIdsChange}
+                onSubmit={onSubmit}
+                isSubmitting={isSubmitting}
+                compact
+                hideSubmit
+                hideDescription
+                hideLists
+                hideCollections
+                sideBySideTaxonomy
+                tagPickerAsChips
+                lockedList={fixedList}
+              />
+
               <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
                 <button
                   type="button"
@@ -166,75 +214,6 @@ export default function PostComposerInline({
                   unoptimized
                 />
               </div>
-
-              {/* SAĞ — form alanları */}
-              <div className="flex min-w-0 flex-col gap-3">
-                <div>
-                  <div className="relative">
-                    <textarea
-                      value={description}
-                      onChange={(event) =>
-                        onDescriptionChange(
-                          event.target.value.slice(0, DESCRIPTION_MAX),
-                        )
-                      }
-                      placeholder={t("enterDescription")}
-                      maxLength={DESCRIPTION_MAX}
-                      rows={2}
-                      disabled={isSubmitting}
-                      className={`peer w-full resize-none rounded-lg border bg-white px-3 pb-6 pt-2 text-[15px] leading-relaxed text-gray-900 placeholder:text-gray-400 focus:border-58b4d1 focus:outline-none focus:ring-2 focus:ring-58b4d1/30 disabled:opacity-60 ${
-                        descriptionOver
-                          ? "border-red-300"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {/* Sayaç + uyarı: textarea'nın sağ alt köşesine içeri yerleştirilir,
-                        ayrı satır kaplamaz. Sadece hover/focus'ta görünür ki yazarken
-                        göz önünde olsun. */}
-                    <div
-                      className={`pointer-events-none absolute bottom-1.5 right-2 flex items-center gap-2 text-[10px] transition-opacity ${
-                        descriptionOver || remaining <= 10
-                          ? "opacity-100"
-                          : "opacity-0 peer-hover:opacity-100 peer-focus:opacity-100"
-                      }`}
-                    >
-                      {descriptionOver ? (
-                        <span className="font-semibold text-red-500">
-                          {t("charLimitHint", { count: DESCRIPTION_MAX })}
-                        </span>
-                      ) : null}
-                      <span
-                        className={
-                          descriptionOver
-                            ? "font-semibold text-red-500"
-                            : remaining <= 10
-                              ? "text-orange-500"
-                              : "text-gray-400"
-                        }
-                      >
-                        {descriptionLength}/{DESCRIPTION_MAX}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <TagsInput
-                  description={description}
-                  onDescriptionChange={onDescriptionChange}
-                  tags={tags}
-                  onTagsChange={onTagsChange}
-                  collectionIds={collectionIds}
-                  onCollectionIdsChange={onCollectionIdsChange}
-                  listIds={listIds}
-                  onListIdsChange={onListIdsChange}
-                  onSubmit={onSubmit}
-                  isSubmitting={isSubmitting}
-                  compact
-                  hideSubmit
-                  hideDescription
-                  lockedList={fixedList}
-                />
-              </div>
             </div>
           )}
         </div>
@@ -242,22 +221,12 @@ export default function PostComposerInline({
 
       {/* Footer: dosya seçildikten sonra sadece Paylaş, tek satır */}
       {file ? (
-        <div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50/50 px-3 py-2 sm:px-4">
-          <button
-            type="button"
-            onClick={openFilePicker}
-            disabled={isSubmitting}
-            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-58b4d1 transition-colors hover:bg-58b4d1/10 disabled:opacity-50"
-            aria-label={t("uploadTitle")}
-          >
-            <IconPhoto size={16} stroke={1.5} />
-            <span className="hidden sm:inline">{t("loadPikcir")}</span>
-          </button>
+        <div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-white px-3 py-2 sm:px-4">
           <button
             type="button"
             onClick={onSubmit}
             disabled={!canShare}
-            className={`flex-1 rounded-full px-5 py-2 text-sm font-bold transition-colors sm:flex-none sm:min-w-[140px] ${
+            className={`min-w-[140px] rounded-full px-5 py-2 text-sm font-bold transition-colors ${
               canShare
                 ? "bg-58b4d1 text-white hover:bg-[#4aa3c4] active:scale-[0.98]"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -273,7 +242,26 @@ export default function PostComposerInline({
             )}
           </button>
         </div>
-      ) : null}
+      ) : (
+        <div className="flex items-center justify-between border-t border-gray-100 px-3 py-2 sm:px-4">
+          <button
+            type="button"
+            onClick={openFilePicker}
+            disabled={isSubmitting}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-58b4d1 transition-colors hover:bg-58b4d1/10 disabled:opacity-50"
+            aria-label={t("loadPikcir")}
+          >
+            <IconPhoto size={18} stroke={1.7} />
+          </button>
+          <button
+            type="button"
+            disabled
+            className="rounded-full bg-gray-200 px-5 py-2 text-sm font-bold text-gray-400 cursor-not-allowed"
+          >
+            {t("share")}
+          </button>
+        </div>
+      )}
     </section>
   );
 }

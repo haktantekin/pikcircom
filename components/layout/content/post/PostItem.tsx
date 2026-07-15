@@ -1,7 +1,8 @@
-import { IconAdFilled, IconAlarm, IconInfoTriangle, IconBrandMailgun, IconBookmarkPlus } from "@tabler/icons-react";
+import { IconAlarm, IconInfoTriangle, IconBrandMailgun, IconBookmarkPlus } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Tooltip, Modal, Drawer } from '@mantine/core';
+import { Modal, Drawer } from '@mantine/core';
+import UserBadge from "@/components/shared/UserBadge";
 import { useEffect, useState } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import PikModal from "../contentCenter/post/PikModal";
@@ -29,7 +30,8 @@ interface PostItemProps {
   commentCount: number
   pikCount: number
   isFavorited?: boolean
-  admin: boolean
+  admin?: boolean
+  badge?: string
   postTitle?: string
   collections?: {
     id: string;
@@ -58,7 +60,7 @@ interface PostItemProps {
   onEdited?: (data: { description: string; collectionIds: string[] }) => void;
 }
 
-export default function PostItem({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, collections, onCollectionsChange, readOnly = false, tags = [], categoryName, isSensitive, onDeleted, onEdited }: PostItemProps) {
+export default function PostItem({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, badge, postTitle, profileImage, collections, onCollectionsChange, readOnly = false, tags = [], categoryName, isSensitive, onDeleted, onEdited }: PostItemProps) {
   const [pikOpened, setPikOpened] = useState(false);
   const [reportOpened, setReportOpened] = useState(false);
   const [editOpened, setEditOpened] = useState(false);
@@ -98,11 +100,7 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
                 {userName}
               </span>
             </Link>
-            {admin &&
-              <Tooltip label="Yönetici">
-                <IconAdFilled size={15} className="-ml-1 text-202124" />
-              </Tooltip>
-            }
+            <UserBadge badge={badge || (admin ? 'admin' : undefined)} />
             {!readOnly ? (
             <Link href={"javascript:;"} className="flex flex-row ml-0 text-343a40 text-xs">{t("followUp")}</Link>
             ) : null}
@@ -175,9 +173,11 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
           </Drawer>
           ) : null}
           <div className={`ml-auto flex gap-2 ${readOnly ? "hidden" : ""}`}>
-            <div className="flex items-center gap-1 text-sm text-gray-500 font-bold">
-              {liveCommentCount}
-            </div>
+            {liveCommentCount > 0 ? (
+              <div className="flex items-center gap-1 text-sm text-gray-500 font-bold">
+                {liveCommentCount}
+              </div>
+            ) : null}
             <PostShare
               postLink={postLink ?? userLink}
               postTitle={postTitle}
@@ -198,7 +198,7 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
               />
             </Modal>
           </div>
-          {readOnly ? (
+          {readOnly && liveCommentCount > 0 ? (
             <div className="ml-auto flex items-center gap-1 text-sm text-gray-500 font-bold">
               {liveCommentCount}
             </div>
@@ -211,6 +211,7 @@ export default function PostItem({ postId, userName, userLink, postLink, time, i
         <EditPostModal
           postId={postId}
           currentDescription={postTitle ?? ""}
+          currentTags={tags}
           opened={editOpened}
           onClose={() => setEditOpened(false)}
           onSaved={onEdited}

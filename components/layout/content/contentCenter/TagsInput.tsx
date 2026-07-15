@@ -30,6 +30,10 @@ interface TagsInputProps {
   compact?: boolean;
   hideSubmit?: boolean;
   hideDescription?: boolean;
+  hideLists?: boolean;
+  hideCollections?: boolean;
+  sideBySideTaxonomy?: boolean;
+  tagPickerAsChips?: boolean;
   lockedList?: { id: string; name: string };
 }
 
@@ -70,6 +74,10 @@ export default function TagsInput({
   compact = false,
   hideSubmit = false,
   hideDescription = false,
+  hideLists = false,
+  hideCollections = false,
+  sideBySideTaxonomy = false,
+  tagPickerAsChips = false,
   lockedList,
 }: TagsInputProps) {
   const { t } = useTranslation();
@@ -214,24 +222,38 @@ export default function TagsInput({
 
   const canSubmit = tagData.length > 0 && !isSubmitting;
 
+  function toggleTag(slug: string) {
+    const exists = tagData.includes(slug);
+    if (exists) {
+      updateTags(tagData.filter((item) => item !== slug));
+      return;
+    }
+    if (tagData.length >= MAX_TAGS) {
+      return;
+    }
+    updateTags([...tagData, slug]);
+  }
+
   const rootClass = compact
     ? "grid grid-cols-12 w-full gap-1"
-    : "grid grid-cols-12 w-full gap-2 bg-white lg:p-4 rounded";
+    : "grid grid-cols-12 w-full gap-3 rounded-2xl bg-white";
 
   return (
     <div className={rootClass}>
       {!hideDescription ? (
-      <div className="col-span-12 post-title">
+      <div className="col-span-12">
         <Textarea
           className={
             compact
               ? "border-0 px-0 text-base min-h-[52px]"
-              : "border-gray-300 border rounded"
+              : "rounded-xl"
           }
           placeholder={t("enterDescription")}
           maxLength={160}
           minRows={compact ? 2 : undefined}
           autosize={compact}
+          radius="md"
+          size={compact ? "sm" : "md"}
           value={description ?? ""}
           onChange={(event) =>
             onDescriptionChange?.(event.currentTarget.value.slice(0, 160))
@@ -248,13 +270,42 @@ export default function TagsInput({
         />
       </div>
       ) : null}
-      <div className="w-full col-span-12">
+      <div
+        className={`w-full ${
+          sideBySideTaxonomy && !hideCollections
+            ? "col-span-12 sm:col-span-6"
+            : "col-span-12"
+        }`}
+      >
         {tagsLoading ? (
           <div className="flex justify-center py-2">
             <Loader size="sm" />
           </div>
         ) : sortedTagOptions.length === 0 ? (
           <p className="text-sm text-gray-500 py-2">{t("tagsCatalogEmpty")}</p>
+        ) : tagPickerAsChips ? (
+          <div className="space-y-1.5">
+            <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+              {sortedTagOptions.map((option) => {
+                const selected = tagData.includes(option.value);
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => toggleTag(option.value)}
+                    aria-pressed={selected}
+                    className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                      selected
+                        ? "border-58b4d1 bg-58b4d1 text-white"
+                        : "border-gray-300 text-202124 hover:bg-gray-100"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         ) : (
           <MultiSelect
             ref={tagSelectRef}
@@ -263,6 +314,8 @@ export default function TagsInput({
             label={compact ? undefined : t("tags")}
             placeholder={t("selectTagsPlaceholder")}
             description={compact ? undefined : t("tagsSelectAdminOnly")}
+            radius="md"
+            size={compact ? "sm" : "md"}
             searchable
             nothingFound={t("selectTagsError")}
             value={tagData}
@@ -271,73 +324,79 @@ export default function TagsInput({
           />
         )}
       </div>
-      <div className="w-full col-span-12">
-        {destinationsLoading ? (
-          <div className="flex justify-center py-2">
-            <Loader size="sm" />
-          </div>
-        ) : collectionOptions.length === 0 ? (
-          <p className="text-sm text-gray-500 py-2">
-            {t("noCollectionsForPost")}{" "}
-            <Link href={profileCollectionsHref} className="text-58b4d1 font-bold">
-              {t("collection")}
-            </Link>
-          </p>
-        ) : (
-          <MultiSelect
-            ref={collectionSelectRef}
-            data={collectionOptions}
-            label={compact ? undefined : t("selectCollectionsLabel")}
-            placeholder={t("selectCollectionsPlaceholder")}
-            searchable
-            nothingFound={t("selectTagsError")}
-            value={collectionData}
-            onChange={updateCollectionIds}
-            clearable
-          />
-        )}
-      </div>
-      <div className="w-full col-span-12">
-        {lockedList ? (
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              {t("selectListsLabel")}
-            </label>
-            <div
-              className="flex min-h-[36px] items-center rounded border border-gray-200 bg-gray-50 px-3 text-sm font-semibold text-202124"
-              aria-readonly
-            >
-              {lockedList.name}
+      {!hideCollections ? (
+        <div className={`w-full ${sideBySideTaxonomy ? "col-span-12 sm:col-span-6" : "col-span-12"}`}>
+          {destinationsLoading ? (
+            <div className="flex justify-center py-2">
+              <Loader size="sm" />
             </div>
-            <p className="mt-1 text-xs text-gray-500">{t("listLockedHint")}</p>
-          </div>
-        ) : destinationsLoading ? null : listOptions.length === 0 ? (
-          <p className="text-sm text-gray-500 py-2">
-            {t("noListsForPost")}{" "}
-            <Link href="/lists" className="text-58b4d1 font-bold">
-              {t("lists")}
-            </Link>
-          </p>
-        ) : (
-          <MultiSelect
-            ref={listSelectRef}
-            data={listOptions}
-            label={compact ? undefined : t("selectListsLabel")}
-            placeholder={t("selectListsPlaceholder")}
-            searchable
-            nothingFound={t("selectTagsError")}
-            value={listData}
-            onChange={updateListIds}
-            clearable
-          />
-        )}
-      </div>
+          ) : collectionOptions.length === 0 ? (
+            <p className="text-sm text-gray-500 py-2">
+              {t("noCollectionsForPost")} {" "}
+              <Link href={profileCollectionsHref} className="text-58b4d1 font-bold">
+                {t("collection")}
+              </Link>
+            </p>
+          ) : (
+            <MultiSelect
+              ref={collectionSelectRef}
+              data={collectionOptions}
+              label={compact ? undefined : t("selectCollectionsLabel")}
+              placeholder={t("selectCollectionsPlaceholder")}
+              radius="md"
+              size={compact ? "sm" : "md"}
+              searchable
+              nothingFound={t("selectTagsError")}
+              value={collectionData}
+              onChange={updateCollectionIds}
+              clearable
+            />
+          )}
+        </div>
+      ) : null}
+      {!hideLists ? (
+        <div className="w-full col-span-12">
+          {lockedList ? (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                {t("selectListsLabel")}
+              </label>
+              <div
+                className="flex min-h-[36px] items-center rounded border border-gray-200 bg-gray-50 px-3 text-sm font-semibold text-202124"
+                aria-readonly
+              >
+                {lockedList.name}
+              </div>
+              <p className="mt-1 text-xs text-gray-500">{t("listLockedHint")}</p>
+            </div>
+          ) : destinationsLoading ? null : listOptions.length === 0 ? (
+            <p className="text-sm text-gray-500 py-2">
+              {t("noListsForPost")} {" "}
+              <Link href="/lists" className="text-58b4d1 font-bold">
+                {t("lists")}
+              </Link>
+            </p>
+          ) : (
+            <MultiSelect
+              ref={listSelectRef}
+              data={listOptions}
+              label={compact ? undefined : t("selectListsLabel")}
+              placeholder={t("selectListsPlaceholder")}
+              searchable
+              nothingFound={t("selectTagsError")}
+              value={listData}
+              onChange={updateListIds}
+              clearable
+            />
+          )}
+        </div>
+      ) : null}
       {!hideSubmit && (
-        <div className="col-span-12 my-auto">
+        <div className="col-span-12 flex justify-end pt-1">
           <button
             type="button"
             onClick={onSubmit}
-            className={`w-full h-full flex text-center justify-center items-center rounded font-bold text-white text-base max-w-[100px] mx-auto min-h-[40px] ${!canSubmit ? "bg-f5f3f4 text-gray-400 pointer-events-none" : "bg-58b4d1"}`}
+            className={`inline-flex min-h-[40px] min-w-[120px] items-center justify-center rounded-full px-5 text-sm font-semibold tracking-tight transition-colors ${!canSubmit ? "cursor-not-allowed bg-gray-200 text-gray-400" : "bg-58b4d1 text-white hover:bg-[#4aa3c4]"}`}
             disabled={!canSubmit}
           >
             {isSubmitting ? "..." : t("share")}

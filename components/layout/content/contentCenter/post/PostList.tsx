@@ -1,8 +1,9 @@
-import { IconAdFilled, IconAlarm, IconInfoTriangle, IconMessageCircle, IconBrandMailgun, IconBookmarkPlus, IconTags, IconWriting } from "@tabler/icons-react";
+import { IconAlarm, IconInfoTriangle, IconMessageCircle, IconBrandMailgun, IconBookmarkPlus, IconTags, IconWriting } from "@tabler/icons-react";
 import TagModal, { type PostTagItem } from "./TagModal";
 import Image from "next/image";
 import Link from "next/link";
-import { Tooltip, Modal, Collapse, Drawer, Popover, Spoiler, Tabs } from '@mantine/core';
+import { Modal, Collapse, Drawer, Popover, Spoiler, Tabs } from '@mantine/core';
+import UserBadge from "@/components/shared/UserBadge";
 import { useEffect, useState } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import PostCollapse from "./PostCollapse";
@@ -30,7 +31,8 @@ interface PostListProps {
   commentCount: number
   pikCount: number
   isFavorited?: boolean
-  admin: boolean
+  admin?: boolean
+  badge?: string
   postTitle?: string
   profile: boolean
   authorIsFollowing?: boolean
@@ -62,7 +64,7 @@ interface PostListProps {
   onEdited?: (data: { description: string; collectionIds: string[] }) => void
 }
 
-export default function PostList({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, postTitle, profileImage, profile, authorIsFollowing = false, collectionItem, tags = [], categoryName, isSensitive, collections, onCollectionsChange, readOnly = false, onDeleted, onEdited }: PostListProps) {
+export default function PostList({ postId, userName, userLink, postLink, time, image, commentCount, pikCount, isFavorited, admin, badge, postTitle, profileImage, profile, authorIsFollowing = false, collectionItem, tags = [], categoryName, isSensitive, collections, onCollectionsChange, readOnly = false, onDeleted, onEdited }: PostListProps) {
   const [reportOpened, setReportOpened] = useState(false);
   const [tagOpened, setTagOpened] = useState(false);
   const [editOpened, setEditOpened] = useState(false);
@@ -137,11 +139,7 @@ export default function PostList({ postId, userName, userLink, postLink, time, i
                   {userName}
                 </span>
               </Link>
-              {admin &&
-                <Tooltip label="Yönetici">
-                  <IconAdFilled size={15} className="-ml-1 text-202124" />
-                </Tooltip>
-              }
+              <UserBadge badge={badge || (admin ? 'admin' : undefined)} />
               {!profile && userName && !readOnly ? (
                 <FollowToggle
                   userName={userName}

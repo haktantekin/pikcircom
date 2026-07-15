@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next build && next start -p 3000",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "doctor": "npx react-doctor@latest"
   },
   "dependencies": {
     "@emotion/react": "^11.11.0",

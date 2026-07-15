@@ -68,7 +68,7 @@ export default function FeedMasonryGrid({
           sizes={imageSizes}
           showMeta={showMeta}
           roundedClassName="rounded-xl"
-          linkClassName="group relative block w-full overflow-hidden rounded-xl bg-gray-100 outline-none ring-58b4d1 transition hover:opacity-95 focus-visible:ring-2"
+          linkClassName="relative block w-full overflow-hidden rounded-xl bg-gray-100 outline-none ring-58b4d1 focus-visible:ring-2"
         />
       )}
     />

@@ -8,6 +8,7 @@ export type NotificationBellTargetProps =
   Omit<ComponentPropsWithoutRef<"button">, "children"> & {
     notificationAnchor?: boolean;
     unreadCount: number;
+    compact?: boolean;
   };
 
 /** Menu.Target klona yapışan onClick / aria için tüm düğüm props'larını <button>a iletmek gerekir. */
@@ -16,6 +17,7 @@ const NotificationBellTarget = forwardRef<HTMLButtonElement, NotificationBellTar
     {
       notificationAnchor,
       unreadCount,
+      compact = false,
       className,
       type = "button",
       ...rest
@@ -43,7 +45,11 @@ const NotificationBellTarget = forwardRef<HTMLButtonElement, NotificationBellTar
             {unreadCount > 99 ? "99+" : unreadCount}
           </div>
         ) : null}
-        <IconBellRinging size="1.7rem" stroke={1.0} className="text-343a40" />
+        <IconBellRinging
+          size={compact ? "1.2rem" : "1.7rem"}
+          stroke={compact ? 1.15 : 1.0}
+          className="text-343a40"
+        />
       </button>
     );
   },

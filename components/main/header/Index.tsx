@@ -2,11 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import ShowProfile from './ShowProfile';
 import { IconLetterC, IconLetterI, IconLetterK, IconLetterP, IconLetterR, IconPlus } from '@tabler/icons-react';
-import { Menu, Modal, Drawer } from '@mantine/core';
+import { Menu, Modal } from '@mantine/core';
 import Notification from "./Notification";
 import { useDisclosure } from '@mantine/hooks';
 import NewPost from "./NewPost";
-import ShowProfileMobile from "./ShowProfileMobile";
 import { useEffect, useState } from "react";
 import Search from "../Search";
 import { useTranslation } from "react-i18next";
@@ -18,12 +17,12 @@ interface HeaderProps{
     userName?: string;
     avatarUrls?: Record<string, string>;
   } | null;
+  leftSlot?: React.ReactNode;
 }
 
-export default function Header({user}: HeaderProps) {
+export default function Header({user, leftSlot}: HeaderProps) {
   const [opened, { open, close }] = useDisclosure(false);
   const [postModalKey, setPostModalKey] = useState(0);
-  const [profile, setProfile] = useState(false);
   const [currentUser, setCurrentUser] = useState<HeaderProps['user'] | null>(null);
   const [sessionResolved, setSessionResolved] = useState(false);
   const { t } = useTranslation();
@@ -91,7 +90,12 @@ export default function Header({user}: HeaderProps) {
     <header className="sticky top-0 z-30 flex h-14 w-full items-center border-b border-gray-100/90 bg-white/95 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-white/80">
       <div className="container">
         <div className="grid grid-cols-12 w-full min-h-full">
-          <div className="col-span-12 lg:col-span-2">
+          <div className="col-span-12 lg:col-span-2 relative flex items-center justify-center">
+            {leftSlot ? (
+              <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2">
+                {leftSlot}
+              </div>
+            ) : null}
             <Link href="/" className="flex h-full items-center justify-center gap-2">
               <Image src="/logo.png" alt="Pickup" width={32} height={40} className="w-[32px] h-[40px]" priority></Image>
               <div className="hidden text-sm font-bold text-58b4d1 flex justify-center items-center">
@@ -150,12 +154,6 @@ export default function Header({user}: HeaderProps) {
                   <ShowProfile user={sessionUser ?? undefined} />
                 </Menu.Dropdown>
               </Menu>
-            </div>
-            <div className="relative cursor-pointer justify-center flex lg:hidden" title={t("myProfile")}>
-              <button type="button" onClick={() => setProfile(true)}><Image alt="profile" src={pickAvatarUrlFromMap(avatarUser?.avatarUrls)} width={400} height={400} className="h-9 w-9 rounded-full border border-gray-100 object-cover shadow-card ring-2 ring-white" /></button>
-              <Drawer opened={profile} onClose={() => setProfile(false)} title={t("menus")}>
-                <ShowProfileMobile user={sessionUser ?? undefined} />
-              </Drawer>
             </div>
               </>
             )}

@@ -46,6 +46,8 @@ export default function ContentCenter({ type, feedReadOnly = false }: ContentCen
       const next = current.includes(slug)
         ? current.filter((s) => s !== slug)
         : [...current, slug];
+      // Cookie'yi updater dışında yazmak daha güvenli ama burada
+      // sonucu hemen bilmemiz gerekiyor, state updater içinde kalması şart.
       writeHomeTagVisibilityCookie(next);
       return next;
     });
@@ -55,10 +57,13 @@ export default function ContentCenter({ type, feedReadOnly = false }: ContentCen
    * Tüm gizli etiketleri geri getir (gizliler listesini temizle) ve cookie'ye yaz.
    */
   const handleShowAllHomeTags = useCallback(() => {
-    setHiddenHomeTagSlugs(() => {
-      writeHomeTagVisibilityCookie([]);
-      return [];
-    });
+    writeHomeTagVisibilityCookie([]);
+    setHiddenHomeTagSlugs([]);
+  }, []);
+
+  const handleHideAllHomeTags = useCallback((slugs: string[]) => {
+    writeHomeTagVisibilityCookie(slugs);
+    setHiddenHomeTagSlugs(slugs);
   }, []);
 
   return (
@@ -71,6 +76,7 @@ export default function ContentCenter({ type, feedReadOnly = false }: ContentCen
               hiddenSlugs={hiddenHomeTagSlugs}
               onToggleTagVisibility={handleToggleHomeTagVisibility}
               onShowAll={handleShowAllHomeTags}
+              onHideAll={handleHideAllHomeTags}
               readOnly={feedReadOnly}
             />
             <ExploreFeed

@@ -1,5 +1,6 @@
 import { resolvePostAuthorProfileImage } from "@/src/avatarUrl";
 import { pickPostImageUrl } from "@/src/postImageUrl";
+import { IconArrowNarrowLeft } from "@tabler/icons-react";
 import PostItem from "@/components/layout/content/post/PostItem";
 import Footer from "@/components/main/footer/Footer";
 import Header from "@/components/main/header/Index";
@@ -17,8 +18,6 @@ import {
 import { explorePostToMasonryCard } from "@/src/feedMasonryHelpers";
 import { type MasonryPostCardData } from "@/components/MasonryPostCard";
 import { prepareExplorePosts, type ExplorePost } from "@/src/feedPostTypes";
-
-import { IconArrowNarrowLeft } from "@tabler/icons-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -251,32 +250,23 @@ export default function PostDetail({ ssrMeta }: InferGetServerSidePropsType<type
         <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
-      <Header user={profile} />
+      <Header
+        user={profile}
+        leftSlot={
+          <button
+            type="button"
+            onClick={handleGoBack}
+            className="flex items-center gap-0.5 text-343a40"
+            aria-label={t("goBack")}
+          >
+            <IconArrowNarrowLeft size={20} />
+          </button>
+        }
+      />
       <main className="h-auto app-main-with-tab-bar">
         <div className="container lg:mt-3">
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-12 relative mb-4 mt-4 lg:mt-0">
-              <div
-                className="w-full bg-white rounded mb-4 text-sm text-center min-h-[40px] flex justify-center items-center relative mt-3"
-                style={{
-                  boxShadow: "rgba(33, 35, 38, 0.1) 0px 10px 10px -10px",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={handleGoBack}
-                  className="absolute left-4 top-2 flex items-center justify-center gap-0.5"
-                  aria-label={t("goBack")}
-                >
-                  <IconArrowNarrowLeft />
-                  <span className="font-bold text-xs text-343a40">
-                    {t("goBack")}
-                  </span>
-                </button>
-                <div className="font-bold text-sm text-126782">
-                  {t("pikcirDetail")}
-                </div>
-              </div>
 
               {error || !post ? (
                 <div className="bg-white flex justify-center items-center min-h-[100px] text-center text-sm rounded">
@@ -300,6 +290,7 @@ export default function PostDetail({ ssrMeta }: InferGetServerSidePropsType<type
                   pikCount={post.favoriteCount ?? 0}
                   isFavorited={post.isFavorited}
                   admin={false}
+                  badge={post.badge}
                   postTitle={post.subject}
                   postLink={`/${post.userName || profileSlug || ""}/posts/${post.id}`}
                   tags={post.tags}

@@ -272,5 +272,9 @@
     "noCollections": "No collections yet.",
     "cancel": "Cancel",
     "save": "Save",
-    "postUpdateError": "Could not update post."
+    "postUpdateError": "Could not update post.",
+    "badgeCreator": "Creator",
+    "badgeVerified": "Verified",
+    "badgeAdmin": "Admin",
+    "maxTagsReached": "Maximum 5 tags allowed."
 }

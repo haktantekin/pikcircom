@@ -251,7 +251,7 @@ export default function PostComposer({
   return (
     <div
       data-composer-dropzone
-      className={`flex w-full max-w-full flex-col items-stretch rounded-2xl border border-gray-200/80 bg-white p-3 shadow-card sm:p-4 ${
+      className={`relative flex w-full max-w-full flex-col items-stretch rounded-2xl border border-gray-200 bg-white p-4 shadow-card sm:p-5 ${
         isDragActive ? "border-58b4d1 ring-2 ring-58b4d1/30" : ""
       }`}
       {...modalDropZoneProps}
@@ -278,21 +278,20 @@ export default function PostComposer({
       ) : null}
 
       {file ? (
-        // === Paket A: iki sütunlu düzen ===
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.1fr_1fr]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           {/* SOL — görsel */}
           <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
             <button
               type="button"
               onClick={clearFile}
               disabled={isSubmitting}
-              className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-500 shadow-md transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-60"
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-500 shadow-md transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-60"
               aria-label={t("hide")}
             >
               <IconX size={18} stroke={2} />
             </button>
             <Image
-              className="max-h-[min(360px,55vh)] w-full object-cover"
+              className="max-h-[min(430px,60vh)] w-full object-cover"
               width={600}
               height={400}
               src={previewUrl || "/profile.jpg"}
@@ -302,7 +301,7 @@ export default function PostComposer({
           </div>
 
           {/* SAĞ — form */}
-          <div className="flex min-w-0 flex-col gap-3">
+          <div className="flex min-w-0 flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-3 sm:p-4">
             <TagsInput
               description={description}
               onDescriptionChange={setDescription}
@@ -314,24 +313,26 @@ export default function PostComposer({
               onListIdsChange={setListIds}
               onSubmit={handleSubmit}
               isSubmitting={isSubmitting}
+              hideLists
+              compact
               lockedList={fixedList}
             />
           </div>
         </div>
       ) : (
-        <div className="w-full py-6 text-center">
-          <p className="mb-3 text-sm font-medium text-58b4d1">
+        <div className="mx-auto w-full max-w-2xl rounded-2xl border border-dashed border-gray-300 bg-gray-50/70 px-5 py-10 text-center sm:px-8">
+          <p className="mb-2 text-sm font-semibold tracking-wide text-202124">
             {t("uploadTitle")}
           </p>
           <button
             type="button"
             onClick={openModalFilePicker}
-            className="mx-auto flex items-center gap-2 rounded-full border border-58b4d1 px-5 py-2 text-sm font-semibold text-58b4d1 transition-colors hover:bg-58b4d1 hover:text-white"
+            className="mx-auto flex items-center gap-2 rounded-full border border-58b4d1 bg-white px-6 py-2.5 text-sm font-semibold text-58b4d1 transition-colors hover:bg-58b4d1 hover:text-white"
           >
             <IconPhoto size={20} stroke={1.5} />
             <span>{t("loadPikcir")}</span>
           </button>
-          <p className="mt-2 text-xs text-gray-400">{t("composeDropOverlay")}</p>
+          <p className="mt-3 text-xs text-gray-500">{t("composeDropOverlay")}</p>
         </div>
       )}
     </div>

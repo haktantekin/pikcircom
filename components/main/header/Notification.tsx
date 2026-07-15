@@ -13,9 +13,10 @@ import { buildNotificationSummary } from "@/components/main/header/notifications
 interface NotificationProps {
   /** Tek DOM id için: sol menüden `show-notification` ile tetiklendiğinde masaüstü header örneği. */
   notificationAnchor?: boolean;
+  compact?: boolean;
 }
 
-export default function Notification({ notificationAnchor = false }: NotificationProps) {
+export default function Notification({ notificationAnchor = false, compact = false }: NotificationProps) {
   const { t, i18n } = useTranslation();
   const locale = typeof i18n.language === "string" ? i18n.language : "tr";
 
@@ -98,6 +99,7 @@ export default function Notification({ notificationAnchor = false }: Notificatio
           <NotificationBellTarget
             notificationAnchor={notificationAnchor}
             unreadCount={unreadCount}
+            compact={compact}
           />
         </Menu.Target>
         <Menu.Dropdown>

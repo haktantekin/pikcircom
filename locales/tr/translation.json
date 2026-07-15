@@ -273,5 +273,9 @@
     "noCollections": "Henüz koleksiyon yok.",
     "cancel": "İptal",
     "save": "Kaydet",
-    "postUpdateError": "Gönderi güncellenemedi."
+    "postUpdateError": "Gönderi güncellenemedi.",
+    "badgeCreator": "İçerik Üreticisi",
+    "badgeVerified": "Doğrulanmış",
+    "badgeAdmin": "Yönetici",
+    "maxTagsReached": "En fazla 5 etiket seçilebilir."
 }
